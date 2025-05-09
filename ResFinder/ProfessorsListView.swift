@@ -2,12 +2,12 @@ import SwiftUI
 
 struct ProfessorsListView: View {
     let school: String
-    let researchFilters: [String]    // new parameter
-
+    let researchFilters: [String]
+    
     @StateObject private var vm = ProfessorsViewModel()
     @State private var searchText = ""
-
-    // filter by school, by researchFilters, then by search text
+    
+    // Filter professors
     private var filteredProfessors: [Professor] {
         vm.professors
             // 1) must match the selected school
@@ -19,58 +19,170 @@ struct ProfessorsListView: View {
                     .intersection(Set(researchFilters))
                     .isEmpty
             }
-            // 3) then apply search‑text filter
+            // 3) then apply search-text filter
             .filter { prof in
                 guard !searchText.isEmpty else { return true }
                 let term = searchText.lowercased()
                 return prof.name.lowercased().contains(term)
+                    || prof.department.lowercased().contains(term)
                     || prof.researchAreas.contains { $0.lowercased().contains(term) }
             }
     }
-
+    
     var body: some View {
-        List {
-            // header
-            Text("Showing \(filteredProfessors.count) of \(vm.totalCount)")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-
-            ForEach(filteredProfessors) { prof in
-                NavigationLink(destination: DetailView(prof: prof)) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(prof.name).font(.headline)
-                        Text(prof.department)
-                            .font(.caption)
+        VStack(spacing: 0) {
+            // Search bar
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.secondary)
+                
+                TextField("Search faculty by name or department", text: $searchText)
+                    .font(.body)
+                
+                if !searchText.isEmpty {
+                    Button(action: {
+                        searchText = ""
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
                             .foregroundColor(.secondary)
                     }
-                    .padding(.vertical, 6)
                 }
             }
-        }
-        .searchable(text: $searchText, prompt: "Search by name or research area")
-        .listStyle(PlainListStyle())
-        .navigationTitle("\(school) Faculty")
-        .overlay {
+            .padding(10)
+            .background(Color(.systemGray6))
+            .cornerRadius(10)
+            .padding(.horizontal)
+            .padding(.top, 12)
+            
+            // Filter chips
+            if !researchFilters.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(researchFilters, id: \.self) { filter in
+                            Text(filter)
+                                .font(.caption)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(Color.blue.opacity(0.1))
+                                .foregroundColor(.blue)
+                                .cornerRadius(16)
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
+                }
+            }
+            
             if vm.isLoading {
-                ProgressView().scaleEffect(1.3)
-            } else if let err = vm.errorMessage {
-                Text("Error: \(err)")
-                    .foregroundColor(.red)
-                    .multilineTextAlignment(.center)
+                Spacer()
+                ProgressView("Loading professors...")
+                    .progressViewStyle(CircularProgressViewStyle())
                     .padding()
+                Spacer()
+            } else if let error = vm.errorMessage {
+                Spacer()
+                VStack {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.system(size: 50))
+                        .foregroundColor(.orange)
+                        .padding()
+                    
+                    Text("Error")
+                        .font(.headline)
+                        .padding(.bottom, 4)
+                    
+                    Text(error)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                }
+                Spacer()
+            } else {
+                // Results count
+                HStack {
+                    Text("Showing \(filteredProfessors.count) of \(vm.totalCount) professors")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal)
+                    
+                    Spacer()
+                }
+                .padding(.top, 4)
+                
+                // Professor list
+                List {
+                    ForEach(filteredProfessors) { prof in
+                        NavigationLink(destination: DetailView(prof: prof)) {
+                            ProfessorRowView(professor: prof)
+                        }
+                    }
+                }
+                .listStyle(InsetGroupedListStyle())
             }
         }
+        .navigationTitle("\(school) Faculty")
+        .background(Color(.systemGroupedBackground).ignoresSafeArea())
         .onAppear { vm.load() }
     }
 }
 
-struct ProfessorsListView_Previews: PreviewProvider {
-    static var previews: some View {
-        NavigationView {
-            ProfessorsListView(
-                school: "UMD",
-                researchFilters: ["Machine Learning", "Computer Vision"]
-            )
+// Professor row with improved design
+struct ProfessorRowView: View {
+    let professor: Professor
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .center) {
+                // Professor name and department
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(professor.name)
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                    
+                    Text(professor.department)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+                
+                // First initial of name as profile placeholder
+                if let initial = professor.name.first {
+                    Text(String(initial))
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(width: 40, height: 40)
+                        .background(Color.blue)
+                        .clipShape(Circle())
+                }
+            }
+            
+            // Research areas as tags
+            if !professor.researchAreas.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 6) {
+                        ForEach(professor.researchAreas.prefix(3), id: \.self) { area in
+                            Text(area)
+                                .font(.caption2)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.gray.opacity(0.15))
+                                .cornerRadius(8)
+                        }
+                        
+                        if professor.researchAreas.count > 3 {
+                            Text("+\(professor.researchAreas.count - 3)")
+                                .font(.caption2)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.gray.opacity(0.1))
+                                .cornerRadius(8)
+                        }
+                    }
+                }
+            }
         }
+        .padding(.vertical, 8)
     }
 }

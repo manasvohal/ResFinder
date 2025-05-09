@@ -1,75 +1,88 @@
 import SwiftUI
-import Foundation
-import Combine
 
-// MARK: – ViewModel (unchanged)
-class ProfessorsViewModel: ObservableObject {
-    @Published var professors: [Professor] = []
-    @Published var totalCount: Int = 0
-    @Published var isLoading: Bool = false
-    @Published var errorMessage: String?
-
-    func load() {
-        isLoading = true
-        APIClient.fetchProfessors { [weak self] result in
-            DispatchQueue.main.async {
-                self?.isLoading = false
-                switch result {
-                case .success(let resp):
-                    self?.totalCount = resp.count
-                    self?.professors = resp.professors
-                case .failure(let err):
-                    self?.errorMessage = err.localizedDescription
-                }
-            }
-        }
-    }
-}
-
-// MARK: – ContentView: Pick School
 struct ContentView: View {
-    // Tuple of (display name, image asset name)
-    private let schools: [(name: String, imageName: String)] = [
-        ("UMD", "umd_logo"),
-        ("Rutgers", "rutgers_logo")
+    // Schools data
+    private let schools: [(name: String, imageName: String, description: String)] = [
+        ("UMD", "umd_logo", "University of Maryland"),
+        ("Rutgers", "rutgers_logo", "Rutgers University")
     ]
-
+    
     var body: some View {
-        NavigationView {
-            List(schools, id: \.name) { school in
-                NavigationLink(destination: ResearchAreasSelectionView(school: school.name)) {
-                    HStack(spacing: 12) {
-                        Image(school.imageName)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 40, height: 40)
-                            .clipShape(Circle())
-                            .shadow(radius: 2)
-                        Text(school.name)
-                            .font(.headline)
+        VStack(spacing: 0) {
+            // Title
+            Text("Select University")
+                .font(.title2)
+                .fontWeight(.bold)
+                .padding(.top)
+                .padding(.bottom, 8)
+            
+            // School list
+            ScrollView {
+                VStack(spacing: 16) {
+                    ForEach(schools, id: \.name) { school in
+                        NavigationLink(destination: ResearchAreasSelectionView(school: school.name)) {
+                            SchoolCardView(name: school.name,
+                                          logoName: school.imageName,
+                                          description: school.description)
+                        }
                     }
-                    .padding(.vertical, 6)
                 }
+                .padding(.top, 20)
+                .padding(.horizontal)
             }
-            .listStyle(PlainListStyle())
-            .navigationTitle("Pick School")
-            .navigationBarBackButtonHidden(true)
         }
+        .navigationBarTitle("Pick School", displayMode: .inline)
+        .navigationBarBackButtonHidden(true)
+        .background(Color(.systemGroupedBackground).ignoresSafeArea())
     }
 }
 
-
-// MARK: – Array Unique Extension
-fileprivate extension Array where Element: Hashable {
-    func unique() -> [Element] {
-        Array(Set(self))
+// Card View for Schools
+struct SchoolCardView: View {
+    let name: String
+    let logoName: String
+    let description: String
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            // Logo with improved styling
+            Image(logoName)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 60, height: 60)
+                .clipShape(Circle())
+                .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
+                .overlay(
+                    Circle()
+                        .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                )
+                .padding(.leading, 4)
+            
+            // School information
+            VStack(alignment: .leading, spacing: 4) {
+                Text(name)
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+                
+                Text(description)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            
+            Spacer()
+            
+            // Chevron indicator
+            Image(systemName: "chevron.right")
+                .foregroundColor(.secondary)
+                .padding(.trailing, 8)
+        }
+        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(.systemBackground))
+                .shadow(color: Color.black.opacity(0.07), radius: 8, x: 0, y: 2)
+        )
     }
 }
-
-// MARK: – Preview
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
-}
-

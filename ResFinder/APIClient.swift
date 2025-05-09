@@ -7,7 +7,7 @@ enum APIError: Error {
 }
 
 class APIClient {
-    /// Base URL of your Elastic Beanstalk API
+    /// Base URL of your Elastic Beanstalk API
     static let baseURL = "http://facultyfinder-api-env.eba-isypts53.us-east-2.elasticbeanstalk.com/api"
 
     /// Fetch the list of professors wrapped in a ProfessorsResponse
@@ -51,4 +51,3 @@ class APIClient {
         .resume()
     }
 }
-
