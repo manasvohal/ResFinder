@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		369618512DCD751B004986F4 /* ProfessorsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369618502DCD750B004986F4 /* ProfessorsViewModel.swift */; };
+		369618532DCEADC7004986F4 /* ResumeUploadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369618522DCEADBC004986F4 /* ResumeUploadView.swift */; };
 		E90694052DC8633F00324117 /* ResFinderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90694042DC8633F00324117 /* ResFinderApp.swift */; };
 		E90694072DC8633F00324117 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90694062DC8633F00324117 /* ContentView.swift */; };
 		E90694092DC8634100324117 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E90694082DC8634100324117 /* Assets.xcassets */; };
@@ -44,6 +45,7 @@
 
 /* Begin PBXFileReference section */
 		369618502DCD750B004986F4 /* ProfessorsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfessorsViewModel.swift; sourceTree = "<group>"; };
+		369618522DCEADBC004986F4 /* ResumeUploadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResumeUploadView.swift; sourceTree = "<group>"; };
 		E90694012DC8633F00324117 /* ResFinder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ResFinder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E90694042DC8633F00324117 /* ResFinderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResFinderApp.swift; sourceTree = "<group>"; };
 		E90694062DC8633F00324117 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -117,6 +119,7 @@
 				E90694042DC8633F00324117 /* ResFinderApp.swift */,
 				E90694062DC8633F00324117 /* ContentView.swift */,
 				E90694572DC9ADB000324117 /* LandingView.swift */,
+				369618522DCEADBC004986F4 /* ResumeUploadView.swift */,
 				E90694552DC92EEF00324117 /* ResearchAreasSelectionView.swift */,
 				E90694372DC86ECF00324117 /* ProfessorsListView.swift */,
 				E90694532DC92C4800324117 /* OpenRouterService.swift */,
@@ -296,6 +299,7 @@
 				E90694072DC8633F00324117 /* ContentView.swift in Sources */,
 				E90694322DC8676100324117 /* Professor.swift in Sources */,
 				E90694562DC92EEF00324117 /* ResearchAreasSelectionView.swift in Sources */,
+				369618532DCEADC7004986F4 /* ResumeUploadView.swift in Sources */,
 				E90694582DC9ADB000324117 /* LandingView.swift in Sources */,
 				E90694052DC8633F00324117 /* ResFinderApp.swift in Sources */,
 				E90694542DC92C4800324117 /* OpenRouterService.swift in Sources */,

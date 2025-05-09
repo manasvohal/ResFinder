@@ -2,6 +2,7 @@ import SwiftUI
 
 struct LandingView: View {
     @State private var isActive = false
+    @AppStorage("hasUploadedResume") private var hasUploadedResume = false
     
     var body: some View {
         NavigationView {
@@ -40,7 +41,7 @@ struct LandingView: View {
                         .foregroundColor(.white.opacity(0.9))
                         .padding(.bottom, 10)
                     
-                    // Get Started button with modern style
+                    // Get Started button
                     Button(action: {
                         withAnimation {
                             isActive = true
@@ -62,7 +63,7 @@ struct LandingView: View {
                 
                 // Hidden NavigationLink
                 NavigationLink(
-                    destination: ContentView().navigationBarBackButtonHidden(true),
+                    destination: ResumeUploadView(destinationView: AnyView(ContentView().navigationBarBackButtonHidden(true))),
                     isActive: $isActive
                 ) {
                     EmptyView()

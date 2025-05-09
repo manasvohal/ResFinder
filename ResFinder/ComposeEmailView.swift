@@ -9,6 +9,8 @@ struct ComposeEmailView: View {
     @State private var isGenerating = false
     @State private var generationError: String?
     @State private var showingMailAlert = false
+    @AppStorage("hasUploadedResume") private var hasUploadedResume = false
+    @AppStorage("userName") private var userName = ""
     
     var body: some View {
         Form {
@@ -30,7 +32,7 @@ struct ComposeEmailView: View {
                         VStack {
                             ProgressView()
                                 .progressViewStyle(CircularProgressViewStyle(tint: .red))
-                            Text("Generating...")
+                            Text("Generating personalized email...")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                                 .padding(.top, 4)
@@ -48,6 +50,17 @@ struct ComposeEmailView: View {
                         .foregroundColor(.red)
                         .font(.caption)
                 }
+                
+                if !hasUploadedResume {
+                    HStack {
+                        Image(systemName: "info.circle")
+                            .foregroundColor(.orange)
+                        Text("Resume data unavailable. Your email may not be fully personalized.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.top, 4)
+                }
             }
             
             Section {
@@ -56,7 +69,7 @@ struct ComposeEmailView: View {
                 }) {
                     HStack {
                         Spacer()
-                        Text("Generate Template")
+                        Text(hasUploadedResume ? "Generate Personalized Email" : "Generate Template")
                             .foregroundColor(.white)
                         Spacer()
                     }
@@ -99,12 +112,6 @@ struct ComposeEmailView: View {
         .onAppear {
             // Pre-populate subject with research areas
             subject = "Inquiry about your research in \(prof.researchAreas.joined(separator: ", "))"
-            
-            // Optional: Pre-populate with professor's email if available
-            // For example, if your Professor model had an email field:
-            // if let profEmail = prof.email, !profEmail.isEmpty {
-            //     recipient = profEmail
-            // }
         }
     }
     
