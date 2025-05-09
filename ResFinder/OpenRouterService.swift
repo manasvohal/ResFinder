@@ -12,50 +12,54 @@ class OpenRouterService {
         let userName = UserDefaults.standard.string(forKey: "userName") ?? ""
         let userMajor = UserDefaults.standard.string(forKey: "userMajor") ?? ""
         let userYear = UserDefaults.standard.string(forKey: "userYear") ?? ""
-        let userResume = UserDefaults.standard.string(forKey: "resumeText") ?? ""
+        var userResume = UserDefaults.standard.string(forKey: "resumeText") ?? ""
+        
+        // Limit resume text length for the API request
+        let maxResumeLength = 2000
+        if userResume.count > maxResumeLength {
+            userResume = String(userResume.prefix(maxResumeLength)) + "..."
+        }
         
         let researchInterests = researchAreas.joined(separator: ", ")
         
         // Create the prompt with the structured format
         let prompt = """
-        Using the following information, generate a professional, personalized email to a professor:
+        Using the following student information and professor's research areas, create a short, personalized email (max 200 words):
         
         STUDENT INFO:
         Name: \(userName)
         Year and Major: \(userYear) in \(userMajor)
         
+        RESUME DETAILS:
+        \(userResume)
+        
         PROFESSOR'S RESEARCH AREAS: \(researchInterests)
         
-        STUDENT'S RESUME SUMMARY: \(userResume)
+        Use this exact format (do NOT include a subject line):
         
-        The email should follow this structure:
+        Dear Professor XXX,
         
-        "Dear Professor XXX,
+        I hope that you are doing well. I am a [YEAR] studying [MAJOR] and am interested in your research on [RESEARCH AREA]. [1-2 SENTENCES CONNECTING STUDENT'S RESUME EXPERIENCE TO PROFESSOR'S RESEARCH].
         
-        I hope that you are doing well. I am a [COLLEGE YEAR AND MAJOR/HONORS PROGRAM] and am very much interested in your [WHAT THEY ARE RESEARCHING]. [EXPLAIN BRIEFLY WHY YOU WANT TO WORK IN THE LAB BASED ON STUDENT'S EXPERIENCE FROM RESUME]. 
+        [1 SENTENCE HIGHLIGHTING A SPECIFIC SKILL FROM RESUME RELEVANT TO THE LAB]. I would love to be a part of your research.
         
-        Overall, I am a hard-working individual who can communicate well and produce thorough work. In particular, [PROVIDE SPECIFIC EXAMPLE FROM STUDENT'S RESUME THAT RELATES TO THE RESEARCH AREA]. I would love to be a part of the work you are doing.
-        
-        Do you have time to briefly meet sometime this week or next, either in person or by zoom? I'd be happy to provide you with my resume and unofficial transcript.
-        
-        I hope to hear back from you soon. In the meantime, have a great day!
+        Do you have time to briefly meet sometime this week or next? I'd be happy to provide my resume and transcript.
         
         Sincerely,
-        \(userName)"
-        
-        Keep the email concise, professional, and personalized based on the student's background and the professor's research interests. Make the connections between the student's experience and the professor's work clear and specific.
+        \(userName)
         """
         
         // 1) Build chat payload
         let messages: [[String:String]] = [
-            ["role":"system","content":"You are a helpful assistant that writes professional emails."],
+            ["role":"system","content":"You are a professional email writer who creates concise, effective emails."],
             ["role":"user","content": prompt]
         ]
         
         let bodyJson: [String:Any] = [
-            "model": "gpt-3.5-turbo",        // or "gpt-4o-mini" if your key allows
+            "model": "gpt-3.5-turbo",
             "messages": messages,
-            "max_tokens": 500
+            "max_tokens": 350,
+            "temperature": 0.7
         ]
         
         guard

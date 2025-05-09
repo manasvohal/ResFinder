@@ -7,6 +7,10 @@ struct ContentView: View {
         ("Rutgers", "rutgers_logo", "Rutgers University")
     ]
     
+    @State private var showResumeUpload = false
+    @AppStorage("hasUploadedResume") private var hasUploadedResume = false
+    @AppStorage("userName") private var userName = ""
+    
     var body: some View {
         VStack(spacing: 0) {
             // Title with red background
@@ -17,6 +21,34 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
                 .background(Color.red)
+            
+            // Resume info bar
+            if hasUploadedResume {
+                HStack {
+                    Image(systemName: "doc.fill")
+                        .foregroundColor(.red)
+                    
+                    Text("Resume uploaded for \(userName)")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    
+                    Spacer()
+                    
+                    Button(action: {
+                        showResumeUpload = true
+                    }) {
+                        Text("Edit")
+                            .font(.caption)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 4)
+                            .background(Color.red)
+                            .cornerRadius(12)
+                    }
+                }
+                .padding()
+                .background(Color.gray.opacity(0.1))
+            }
             
             // School list
             ScrollView {
@@ -37,6 +69,9 @@ struct ContentView: View {
         .navigationBarTitle("Pick School", displayMode: .inline)
         .navigationBarBackButtonHidden(true)
         .background(Color(.systemGroupedBackground).ignoresSafeArea())
+        .sheet(isPresented: $showResumeUpload) {
+            ResumeUploadView(destinationView: AnyView(EmptyView()), isSheet: true)
+        }
     }
 }
 

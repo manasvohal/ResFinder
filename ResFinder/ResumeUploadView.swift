@@ -1,8 +1,10 @@
 import SwiftUI
 import UniformTypeIdentifiers
+import PDFKit
 
 struct ResumeUploadView: View {
     var destinationView: AnyView
+    var isSheet: Bool = false
     
     @State private var name = ""
     @State private var major = ""
@@ -19,7 +21,10 @@ struct ResumeUploadView: View {
     @AppStorage("userMajor") private var savedMajor = ""
     @AppStorage("userYear") private var savedYear = ""
     @AppStorage("resumeText") private var savedResumeText = ""
+    @AppStorage("resumeFileName") private var savedResumeFileName = ""
     @AppStorage("hasUploadedResume") private var hasUploadedResume = false
+    
+    @Environment(\.presentationMode) var presentationMode
     
     // Year options
     let yearOptions = ["Freshman", "Sophomore", "Junior", "Senior", "Graduate Student", "PhD Student"]
@@ -28,10 +33,16 @@ struct ResumeUploadView: View {
         VStack(spacing: 0) {
             // Header with red background
             VStack {
-                Text("Upload Your Resume")
+                Text(isSheet ? "Update Your Resume" : "Upload Your Resume")
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
+                    
+                if isSheet {
+                    Text("Edit your information")
+                        .font(.subheadline)
+                        .foregroundColor(.white.opacity(0.8))
+                }
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
@@ -126,9 +137,9 @@ struct ResumeUploadView: View {
                                 showingDocumentPicker = true
                             }) {
                                 HStack {
-                                    Image(systemName: "doc.badge.plus")
+                                    Image(systemName: (resumeFileName != nil || savedResumeFileName.count > 0) ? "arrow.triangle.2.circlepath" : "doc.badge.plus")
                                         .font(.headline)
-                                    Text(resumeFileName != nil ? "Change Resume" : "Upload PDF Resume")
+                                    Text((resumeFileName != nil || savedResumeFileName.count > 0) ? "Change Resume" : "Upload PDF Resume")
                                         .font(.headline)
                                 }
                                 .foregroundColor(.white)
@@ -139,11 +150,11 @@ struct ResumeUploadView: View {
                             }
                             
                             // Show file name if uploaded
-                            if let fileName = resumeFileName {
+                            if resumeFileName != nil || savedResumeFileName.count > 0 {
                                 HStack {
                                     Image(systemName: "doc.fill")
                                         .foregroundColor(.red)
-                                    Text(fileName)
+                                    Text(resumeFileName ?? savedResumeFileName)
                                         .font(.subheadline)
                                     Spacer()
                                     Image(systemName: "checkmark.circle.fill")
@@ -152,6 +163,27 @@ struct ResumeUploadView: View {
                                 .padding()
                                 .background(Color(.systemGray6))
                                 .cornerRadius(10)
+                            }
+                            
+                            // Show preview of extracted text
+                            if !resumeText.isEmpty || !savedResumeText.isEmpty {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("Preview of Extracted Resume")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                    
+                                    ScrollView {
+                                        Text(resumeText.isEmpty ? savedResumeText : resumeText)
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .padding()
+                                    }
+                                    .frame(height: 100)
+                                    .background(Color(.systemGray6))
+                                    .cornerRadius(10)
+                                }
+                                .padding(.top, 8)
                             }
                         }
                     }
@@ -162,35 +194,77 @@ struct ResumeUploadView: View {
                             .shadow(color: Color.black.opacity(0.07), radius: 8, x: 0, y: 2)
                     )
                     
-                    // Continue button
-                    Button(action: {
-                        if isFormValid {
-                            saveUserInfo()
-                            isNavigationActive = true
-                        } else {
-                            alertMessage = "Please fill in all fields and upload your resume."
-                            showingAlert = true
-                        }
-                    }) {
-                        HStack {
-                            Text("Continue to School Selection")
+                    // Action Buttons
+                    if isSheet {
+                        // Save changes button for sheet mode
+                        Button(action: {
+                            if isFormValid {
+                                saveUserInfo()
+                                presentationMode.wrappedValue.dismiss()
+                            } else {
+                                alertMessage = "Please fill in all fields and upload your resume."
+                                showingAlert = true
+                            }
+                        }) {
+                            Text("Save Changes")
                                 .fontWeight(.semibold)
-                            Image(systemName: "arrow.right")
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(isFormValid ? Color.black : Color.gray)
+                                .cornerRadius(10)
                         }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(isFormValid ? Color.black : Color.gray)
-                        .cornerRadius(10)
+                        .disabled(!isFormValid)
+                        .padding(.top, 8)
+                        
+                        // Cancel button
+                        Button(action: {
+                            presentationMode.wrappedValue.dismiss()
+                        }) {
+                            Text("Cancel")
+                                .fontWeight(.medium)
+                                .foregroundColor(.red)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.white)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(Color.red, lineWidth: 1)
+                                )
+                                .cornerRadius(10)
+                        }
+                        .padding(.top, 8)
+                    } else {
+                        // Continue button for non-sheet mode
+                        Button(action: {
+                            if isFormValid {
+                                saveUserInfo()
+                                isNavigationActive = true
+                            } else {
+                                alertMessage = "Please fill in all fields and upload your resume."
+                                showingAlert = true
+                            }
+                        }) {
+                            HStack {
+                                Text("Continue to School Selection")
+                                    .fontWeight(.semibold)
+                                Image(systemName: "arrow.right")
+                            }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(isFormValid ? Color.black : Color.gray)
+                            .cornerRadius(10)
+                        }
+                        .disabled(!isFormValid)
+                        .padding(.top, 8)
                     }
-                    .disabled(!isFormValid)
-                    .padding(.top, 8)
                 }
                 .padding()
             }
         }
         .navigationBarTitle("", displayMode: .inline)
-        .navigationBarBackButtonHidden(false)
+        .navigationBarBackButtonHidden(isSheet ? true : false)
         .background(Color(.systemGroupedBackground).ignoresSafeArea())
         .sheet(isPresented: $showingDocumentPicker) {
             DocumentPicker(
@@ -206,6 +280,17 @@ struct ResumeUploadView: View {
                 dismissButton: .default(Text("OK"))
             )
         }
+        .onAppear {
+            // Load saved file name on appear
+            if resumeFileName == nil && !savedResumeFileName.isEmpty {
+                resumeFileName = savedResumeFileName
+            }
+            
+            // Load saved resume text on appear
+            if resumeText.isEmpty && !savedResumeText.isEmpty {
+                resumeText = savedResumeText
+            }
+        }
         .background(
             NavigationLink(
                 destination: destinationView,
@@ -218,7 +303,8 @@ struct ResumeUploadView: View {
     }
     
     private var isFormValid: Bool {
-        return !name.isEmpty && !major.isEmpty && !year.isEmpty && resumeFileName != nil
+        return !name.isEmpty && !major.isEmpty && !year.isEmpty &&
+               (resumeFileName != nil || !savedResumeFileName.isEmpty)
     }
     
     private func saveUserInfo() {
@@ -226,7 +312,16 @@ struct ResumeUploadView: View {
         savedName = name
         savedMajor = major
         savedYear = year
-        savedResumeText = resumeText
+        
+        // Save resume info if new file was selected
+        if let fileName = resumeFileName {
+            savedResumeFileName = fileName
+        }
+        
+        if !resumeText.isEmpty {
+            savedResumeText = resumeText
+        }
+        
         hasUploadedResume = true
     }
 }
@@ -272,9 +367,48 @@ struct DocumentPicker: UIViewControllerRepresentable {
             parent.fileName = url.lastPathComponent
             parent.fileURL = url
             
-            // We're simulating getting text from the PDF
-            // In a real app, you'd use PDFKit or a PDF parser library to extract text
-            parent.resumeText = "Experience in \(["programming", "research", "data analysis", "machine learning"].randomElement() ?? "research") and \(["teamwork", "leadership", "project management"].randomElement() ?? "teamwork"). Education in \(["Computer Science", "Engineering", "Biology", "Physics"].randomElement() ?? "Computer Science")."
+            // Use PDFKit to extract text from the PDF
+            extractTextFromPDF(url: url)
+        }
+        
+        private func extractTextFromPDF(url: URL) {
+            // Create a PDF document from the URL
+            guard let pdfDocument = PDFDocument(url: url) else {
+                print("Failed to create PDF document from URL")
+                parent.resumeText = "Could not extract text from PDF. Please ensure it's a valid PDF file."
+                return
+            }
+            
+            var extractedText = ""
+            
+            // Extract text from each page
+            for pageIndex in 0..<pdfDocument.pageCount {
+                guard let page = pdfDocument.page(at: pageIndex) else { continue }
+                
+                if let pageText = page.string {
+                    extractedText += pageText + "\n"
+                }
+            }
+            
+            // If no text was extracted (possibly a scanned PDF without OCR)
+            if extractedText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                parent.resumeText = "The PDF appears to be a scanned document without machine-readable text. Please upload a PDF with extractable text."
+                return
+            }
+            
+            // Clean up the extracted text
+            extractedText = extractedText.replacingOccurrences(of: "\n\n+", with: "\n\n", options: .regularExpression)
+            
+            // Limit the text to a reasonable length if it's too long
+            let maxCharacters = 4000
+            if extractedText.count > maxCharacters {
+                extractedText = String(extractedText.prefix(maxCharacters)) + "\n\n[Text truncated due to length]"
+            }
+            
+            // Set the extracted text
+            parent.resumeText = extractedText
+            
+            print("Successfully extracted \(extractedText.count) characters from PDF")
         }
     }
 }
