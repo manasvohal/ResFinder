@@ -8,25 +8,28 @@ struct ComposeEmailView: View {
     @State private var bodyText = ""
     @State private var isGenerating = false
     @State private var generationError: String?
+    @State private var showingMailAlert = false
     
     var body: some View {
         Form {
-            Section(header: Text("To")) {
+            Section(header: Text("To").foregroundColor(.red)) {
                 TextField("prof@example.edu", text: $recipient)
                     .keyboardType(.emailAddress)
                     .autocapitalization(.none)
+                    .disableAutocorrection(true)
             }
             
-            Section(header: Text("Subject")) {
+            Section(header: Text("Subject").foregroundColor(.red)) {
                 TextField("", text: $subject)
             }
             
-            Section(header: Text("Body")) {
+            Section(header: Text("Body").foregroundColor(.red)) {
                 if isGenerating {
                     HStack {
                         Spacer()
                         VStack {
                             ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .red))
                             Text("Generating...")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
@@ -48,21 +51,67 @@ struct ComposeEmailView: View {
             }
             
             Section {
-                Button("Generate Template") {
+                Button(action: {
                     generateTemplate()
+                }) {
+                    HStack {
+                        Spacer()
+                        Text("Generate Template")
+                            .foregroundColor(.white)
+                        Spacer()
+                    }
+                    .padding(.vertical, 10)
+                    .background(isGenerating ? Color.gray : Color.red)
+                    .cornerRadius(8)
                 }
                 .disabled(isGenerating)
+                .listRowBackground(Color.clear)
                 
-                Button("Send Email") {
-                    sendEmail()
+                Button(action: {
+                    if isValidEmail(recipient) {
+                        sendEmail()
+                    } else {
+                        showingMailAlert = true
+                    }
+                }) {
+                    HStack {
+                        Spacer()
+                        Text("Send Email")
+                            .foregroundColor(.white)
+                        Spacer()
+                    }
+                    .padding(.vertical, 10)
+                    .background(recipient.isEmpty || subject.isEmpty || bodyText.isEmpty ? Color.gray : Color.black)
+                    .cornerRadius(8)
                 }
                 .disabled(recipient.isEmpty || subject.isEmpty || bodyText.isEmpty)
+                .listRowBackground(Color.clear)
+                .alert(isPresented: $showingMailAlert) {
+                    Alert(
+                        title: Text("Invalid Email"),
+                        message: Text("Please enter a valid email address."),
+                        dismissButton: .default(Text("OK"))
+                    )
+                }
             }
         }
         .navigationTitle("Email \(prof.name)")
         .onAppear {
+            // Pre-populate subject with research areas
             subject = "Inquiry about your research in \(prof.researchAreas.joined(separator: ", "))"
+            
+            // Optional: Pre-populate with professor's email if available
+            // For example, if your Professor model had an email field:
+            // if let profEmail = prof.email, !profEmail.isEmpty {
+            //     recipient = profEmail
+            // }
         }
+    }
+    
+    private func isValidEmail(_ email: String) -> Bool {
+        let emailRegEx = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
+        let emailPred = NSPredicate(format:"SELF MATCHES %@", emailRegEx)
+        return emailPred.evaluate(with: email)
     }
     
     private func generateTemplate() {
@@ -87,8 +136,14 @@ struct ComposeEmailView: View {
         let subj = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         let body = bodyText.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         let urlString = "mailto:\(to)?subject=\(subj)&body=\(body)"
+        
         if let url = URL(string: urlString) {
-            UIApplication.shared.open(url)
+            UIApplication.shared.open(url) { success in
+                if !success {
+                    // Handle case where Mail app isn't available
+                    print("Failed to open Mail app")
+                }
+            }
         }
     }
 }

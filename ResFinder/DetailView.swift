@@ -15,7 +15,7 @@ struct DetailView: View {
                             .font(.system(size: 32, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(width: 80, height: 80)
-                            .background(Color.blue)
+                            .background(Color.red)
                             .clipShape(Circle())
                     }
                     
@@ -48,12 +48,13 @@ struct DetailView: View {
                     Text("Research Areas")
                         .font(.headline)
                         .fontWeight(.semibold)
+                        .foregroundColor(.red)
                     
                     ForEach(prof.researchAreas, id: \.self) { area in
                         HStack(alignment: .top) {
                             Image(systemName: "circle.fill")
                                 .font(.system(size: 8))
-                                .foregroundColor(.blue)
+                                .foregroundColor(.red)
                                 .padding(.top, 6)
                             
                             Text(area)
@@ -74,10 +75,11 @@ struct DetailView: View {
                 Link(destination: prof.profileUrl) {
                     HStack {
                         Image(systemName: "globe")
-                            .foregroundColor(.blue)
+                            .foregroundColor(.red)
                         
                         Text("View Professor Profile")
                             .font(.body)
+                            .foregroundColor(.primary)
                         
                         Spacer()
                         
@@ -98,11 +100,12 @@ struct DetailView: View {
                     Text("Contact")
                         .font(.headline)
                         .fontWeight(.semibold)
+                        .foregroundColor(.red)
                     
                     NavigationLink(destination: ComposeEmailView(prof: prof)) {
                         HStack {
                             Image(systemName: "envelope.fill")
-                                .foregroundColor(.blue)
+                                .foregroundColor(.red)
                                 .font(.system(size: 18))
                             
                             Text("Send Email")

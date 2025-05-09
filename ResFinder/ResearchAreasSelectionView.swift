@@ -25,10 +25,16 @@ struct ResearchAreasSelectionView: View {
     
     var body: some View {
         VStack(spacing: 0) {
+            // Red header bar
+            Rectangle()
+                .fill(Color.red)
+                .frame(height: 1)
+                .padding(.top, 1)
+            
             // Search field
             HStack {
                 Image(systemName: "magnifyingglass")
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.red)
                 
                 TextField("Search research areas", text: $searchText)
                     .font(.body)
@@ -38,7 +44,7 @@ struct ResearchAreasSelectionView: View {
                         searchText = ""
                     }) {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.red)
                     }
                 }
             }
@@ -51,7 +57,7 @@ struct ResearchAreasSelectionView: View {
             if vm.isLoading {
                 Spacer()
                 ProgressView("Loading research areas...")
-                    .progressViewStyle(CircularProgressViewStyle())
+                    .progressViewStyle(CircularProgressViewStyle(tint: .red))
                     .padding()
                 Spacer()
             } else if let error = vm.errorMessage {
@@ -59,7 +65,7 @@ struct ResearchAreasSelectionView: View {
                 VStack {
                     Image(systemName: "exclamationmark.triangle")
                         .font(.system(size: 50))
-                        .foregroundColor(.orange)
+                        .foregroundColor(.red)
                         .padding()
                     
                     Text("Error")
@@ -87,7 +93,7 @@ struct ResearchAreasSelectionView: View {
                     if !selectedAreas.isEmpty {
                         Text("\(selectedAreas.count) selected")
                             .font(.subheadline)
-                            .foregroundColor(.blue)
+                            .foregroundColor(.red)
                             .padding(.horizontal)
                             .padding(.top, 8)
                     }
@@ -120,11 +126,11 @@ struct ResearchAreasSelectionView: View {
                         researchFilters: Array(selectedAreas)
                     )
                 ) {
-                    Text("Show \(selectedAreas.count) Professors")
+                    Text(buttonText)
                         .fontWeight(.semibold)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(selectedAreas.isEmpty ? Color.gray.opacity(0.3) : Color.blue)
+                        .background(selectedAreas.isEmpty ? Color.gray.opacity(0.3) : Color.red)
                         .foregroundColor(.white)
                         .cornerRadius(14)
                         .padding(.horizontal)
@@ -150,6 +156,17 @@ struct ResearchAreasSelectionView: View {
         .background(Color(.systemGroupedBackground).ignoresSafeArea())
         .onAppear { vm.load() }
     }
+    
+    // Better button text based on selection state
+    private var buttonText: String {
+        if selectedAreas.isEmpty {
+            return "View Professors"
+        } else if selectedAreas.count == 1 {
+            return "View Professors in Selected Area"
+        } else {
+            return "View Professors in \(selectedAreas.count) Areas"
+        }
+    }
 }
 
 // Improved selection row with animation
@@ -170,11 +187,11 @@ struct MultipleSelectionRow: View {
                 // Checkmark
                 ZStack {
                     Circle()
-                        .fill(isSelected ? Color.blue : Color.clear)
+                        .fill(isSelected ? Color.red : Color.clear)
                         .frame(width: 24, height: 24)
                         .overlay(
                             Circle()
-                                .stroke(isSelected ? Color.blue : Color.gray.opacity(0.5), lineWidth: 1.5)
+                                .stroke(isSelected ? Color.red : Color.gray.opacity(0.5), lineWidth: 1.5)
                         )
                     
                     if isSelected {

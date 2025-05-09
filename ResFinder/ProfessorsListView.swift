@@ -31,10 +31,16 @@ struct ProfessorsListView: View {
     
     var body: some View {
         VStack(spacing: 0) {
+            // Red header bar
+            Rectangle()
+                .fill(Color.red)
+                .frame(height: 1)
+                .padding(.top, 1)
+            
             // Search bar
             HStack {
                 Image(systemName: "magnifyingglass")
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.red)
                 
                 TextField("Search faculty by name or department", text: $searchText)
                     .font(.body)
@@ -44,7 +50,7 @@ struct ProfessorsListView: View {
                         searchText = ""
                     }) {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.red)
                     }
                 }
             }
@@ -63,8 +69,8 @@ struct ProfessorsListView: View {
                                 .font(.caption)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
-                                .background(Color.blue.opacity(0.1))
-                                .foregroundColor(.blue)
+                                .background(Color.red.opacity(0.1))
+                                .foregroundColor(.red)
                                 .cornerRadius(16)
                         }
                     }
@@ -76,7 +82,7 @@ struct ProfessorsListView: View {
             if vm.isLoading {
                 Spacer()
                 ProgressView("Loading professors...")
-                    .progressViewStyle(CircularProgressViewStyle())
+                    .progressViewStyle(CircularProgressViewStyle(tint: .red))
                     .padding()
                 Spacer()
             } else if let error = vm.errorMessage {
@@ -84,7 +90,7 @@ struct ProfessorsListView: View {
                 VStack {
                     Image(systemName: "exclamationmark.triangle")
                         .font(.system(size: 50))
-                        .foregroundColor(.orange)
+                        .foregroundColor(.red)
                         .padding()
                     
                     Text("Error")
@@ -153,7 +159,7 @@ struct ProfessorRowView: View {
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(.white)
                         .frame(width: 40, height: 40)
-                        .background(Color.blue)
+                        .background(Color.red)
                         .clipShape(Circle())
                 }
             }
@@ -167,7 +173,8 @@ struct ProfessorRowView: View {
                                 .font(.caption2)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
-                                .background(Color.gray.opacity(0.15))
+                                .background(Color.red.opacity(0.1))
+                                .foregroundColor(.red)
                                 .cornerRadius(8)
                         }
                         

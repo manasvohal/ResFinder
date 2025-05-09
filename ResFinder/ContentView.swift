@@ -9,12 +9,14 @@ struct ContentView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Title
+            // Title with red background
             Text("Select University")
                 .font(.title2)
                 .fontWeight(.bold)
-                .padding(.top)
-                .padding(.bottom, 8)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(Color.red)
             
             // School list
             ScrollView {
@@ -30,6 +32,7 @@ struct ContentView: View {
                 .padding(.top, 20)
                 .padding(.horizontal)
             }
+            .background(Color(.systemGroupedBackground))
         }
         .navigationBarTitle("Pick School", displayMode: .inline)
         .navigationBarBackButtonHidden(true)
@@ -54,7 +57,7 @@ struct SchoolCardView: View {
                 .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
                 .overlay(
                     Circle()
-                        .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                        .stroke(Color.red.opacity(0.3), lineWidth: 2)
                 )
                 .padding(.leading, 4)
             
@@ -74,7 +77,7 @@ struct SchoolCardView: View {
             
             // Chevron indicator
             Image(systemName: "chevron.right")
-                .foregroundColor(.secondary)
+                .foregroundColor(.red)
                 .padding(.trailing, 8)
         }
         .padding(.vertical, 12)
