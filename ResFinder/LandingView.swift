@@ -3,7 +3,7 @@ import SwiftUI
 struct LandingView: View {
     @State private var isActive = false
     @AppStorage("hasUploadedResume") private var hasUploadedResume = false
-    
+
     var body: some View {
         NavigationView {
             ZStack {
@@ -14,33 +14,32 @@ struct LandingView: View {
                     endPoint: .bottom
                 )
                 .ignoresSafeArea()
-                
+
                 // Main Content
                 VStack(spacing: 30) {
                     Spacer()
-                    
-                    // Logo with subtle shadow
+
+                    // Logo with bigger size and stronger shadow
                     Image("rf_logo")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: 140, height: 140)
-                        .background(
-                            Circle()
-                                .fill(Color.white)
-                                .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 4)
-                        )
-                    
+                        .frame(width: 265, height: 265)               // ↑ increased size
+                        .shadow(color: Color.black.opacity(0.3),      // ↑ added drop shadow
+                                radius: 12,
+                                x: 0,
+                                y: 6)
+
                     // App title with SF font
                     Text("ResFinder")
                         .font(.system(size: 42, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
-                    
+
                     // Tagline
                     Text("Connect with professors in your field")
                         .font(.subheadline)
                         .foregroundColor(.white.opacity(0.9))
                         .padding(.bottom, 10)
-                    
+
                     // Get Started button
                     Button(action: {
                         withAnimation {
@@ -56,14 +55,19 @@ struct LandingView: View {
                             .cornerRadius(27)
                             .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 4)
                     }
-                    
+
                     Spacer()
                 }
                 .padding()
-                
+
                 // Hidden NavigationLink
                 NavigationLink(
-                    destination: ResumeUploadView(destinationView: AnyView(ContentView().navigationBarBackButtonHidden(true))),
+                    destination: ResumeUploadView(
+                        destinationView: AnyView(
+                            ContentView()
+                                .navigationBarBackButtonHidden(true)
+                        )
+                    ),
                     isActive: $isActive
                 ) {
                     EmptyView()
