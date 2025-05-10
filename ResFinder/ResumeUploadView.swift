@@ -165,26 +165,7 @@ struct ResumeUploadView: View {
                                 .cornerRadius(10)
                             }
                             
-                            // Show preview of extracted text
-                            if !resumeText.isEmpty || !savedResumeText.isEmpty {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Text("Preview of Extracted Resume")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                    
-                                    ScrollView {
-                                        Text(resumeText.isEmpty ? savedResumeText : resumeText)
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                            .padding()
-                                    }
-                                    .frame(height: 100)
-                                    .background(Color(.systemGray6))
-                                    .cornerRadius(10)
-                                }
-                                .padding(.top, 8)
-                            }
+                            
                         }
                     }
                     .padding()
