@@ -11,8 +11,46 @@ struct FollowUpEmailView: View {
     @State private var generationError: String?
     @State private var showingMailAlert = false
     @State private var showingSuccessAlert = false
+    @State private var showingTooEarlyAlert = false
+    @State private var professorDetails: Professor? = nil
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var authViewModel: AuthViewModel
+    
+    // Define the minimum days before showing the follow-up button
+    private let minimumDaysForFollowUp = 7
+    
+    // Computed property to check if enough days have passed
+    private var canSendFollowUp: Bool {
+        return outreachRecord.daysSinceContact >= minimumDaysForFollowUp
+    }
+    
+    // Extract professor's last name
+    private var professorLastName: String {
+        let components = outreachRecord.professorName.components(separatedBy: " ")
+        if components.count > 1 {
+            return components.last ?? ""
+        }
+        return outreachRecord.professorName
+    }
+    
+    // Get the best available URL for the professor's website
+    private var bestWebsiteUrl: URL {
+        // First priority: use URL from outreach record if available
+        if let profileUrl = outreachRecord.profileUrl {
+            print("Using URL from outreach record: \(profileUrl)")
+            return profileUrl
+        }
+        
+        // Second priority: use URL from fetched professor details if available
+        if let professor = professorDetails, professor.id == outreachRecord.professorId {
+            print("Using URL from professor details: \(professor.profileUrl)")
+            return professor.profileUrl
+        }
+        
+        // Fallback: use Google search
+        print("Falling back to Google search")
+        return URL(string: "https://www.google.com/search?q=\(outreachRecord.professorName.replacingOccurrences(of: " ", with: "+"))") ?? URL(string: "https://www.google.com")!
+    }
     
     var body: some View {
         ScrollView {
@@ -37,6 +75,13 @@ struct FollowUpEmailView: View {
                         .foregroundColor(.white)
                     
                     Spacer()
+                    
+                    // Empty view to balance the header
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .opacity(0) // Make it invisible but take up space
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 16)
@@ -52,6 +97,56 @@ struct FollowUpEmailView: View {
                         Text("Original email sent \(outreachRecord.daysSinceContact) days ago")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
+                        
+                        // Add professor's website link and note
+                        VStack(alignment: .leading, spacing: 8) {
+                            Divider()
+                                .padding(.vertical, 4)
+                            
+                            HStack {
+                                Image(systemName: "info.circle")
+                                    .foregroundColor(.blue)
+                                Text("Need the professor's email? Find it on their website:")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            Link(destination: bestWebsiteUrl) {
+                                HStack {
+                                    Image(systemName: "globe")
+                                        .foregroundColor(.blue)
+                                    
+                                    if outreachRecord.profileUrl != nil || professorDetails != nil {
+                                        Text("Visit \(outreachRecord.professorName)'s Website")
+                                            .foregroundColor(.blue)
+                                            .underline()
+                                    } else {
+                                        Text("Search for \(outreachRecord.professorName)")
+                                            .foregroundColor(.blue)
+                                            .underline()
+                                    }
+                                    
+                                    Spacer()
+                                    Image(systemName: "arrow.up.right.square")
+                                        .foregroundColor(.blue)
+                                }
+                                .padding(10)
+                                .background(Color.blue.opacity(0.1))
+                                .cornerRadius(8)
+                            }
+                        }
+                        
+                        // Show warning if not enough days have passed
+                        if !canSendFollowUp {
+                            HStack {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .foregroundColor(.orange)
+                                Text("It's recommended to wait at least \(minimumDaysForFollowUp) days before sending a follow-up email.")
+                                    .font(.caption)
+                                    .foregroundColor(.orange)
+                            }
+                            .padding(.top, 4)
+                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal)
@@ -145,7 +240,9 @@ struct FollowUpEmailView: View {
                         .padding(.horizontal)
                         
                         Button(action: {
-                            if isValidEmail(recipient) {
+                            if !canSendFollowUp {
+                                showingTooEarlyAlert = true
+                            } else if isValidEmail(recipient) {
                                 sendEmail()
                             } else {
                                 showingMailAlert = true
@@ -159,7 +256,11 @@ struct FollowUpEmailView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
-                            .background(recipient.isEmpty || subject.isEmpty || bodyText.isEmpty ? Color.gray : Color.blue)
+                            .background(
+                                recipient.isEmpty || subject.isEmpty || bodyText.isEmpty || !canSendFollowUp
+                                ? Color.gray
+                                : Color.blue
+                            )
                             .cornerRadius(10)
                         }
                         .disabled(recipient.isEmpty || subject.isEmpty || bodyText.isEmpty)
@@ -170,11 +271,20 @@ struct FollowUpEmailView: View {
             }
         }
         .onAppear {
-            // Pre-populate subject with "Follow-up"
-            subject = "Follow-up: \(extractSubject())"
+            // Pre-populate subject with shorter format
+            subject = "Follow-up: Research Inquiry"
             
-            // Try to extract email from professor name
-            extractEmailFromName()
+            // DO NOT pre-populate the email field - user needs to enter it again
+            
+            // Try to fetch professor details if we don't have a profileUrl
+            if outreachRecord.profileUrl == nil {
+                outreachViewModel.fetchProfessorDetails(byId: outreachRecord.professorId) { professor in
+                    self.professorDetails = professor
+                    print("Fetched professor details: \(String(describing: professor?.name)), URL: \(String(describing: professor?.profileUrl))")
+                }
+            } else {
+                print("Already have profile URL: \(String(describing: outreachRecord.profileUrl))")
+            }
             
             // Generate template automatically on appear
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -185,6 +295,13 @@ struct FollowUpEmailView: View {
             Alert(
                 title: Text("Invalid Email"),
                 message: Text("Please enter a valid email address."),
+                dismissButton: .default(Text("OK"))
+            )
+        }
+        .alert(isPresented: $showingTooEarlyAlert) {
+            Alert(
+                title: Text("Follow-up Too Early"),
+                message: Text("It's recommended to wait at least \(minimumDaysForFollowUp) days before sending a follow-up email. Only \(outreachRecord.daysSinceContact) days have passed since your initial email."),
                 dismissButton: .default(Text("OK"))
             )
         }
@@ -211,34 +328,45 @@ struct FollowUpEmailView: View {
         isGenerating = true
         generationError = nil
         
-        // Create prompt for follow-up email
-        let followUpPrompt = """
-        Generate a brief follow-up email for a professor I contacted about research opportunities.
-        
-        ORIGINAL EMAIL I SENT:
-        \(outreachRecord.emailSent)
-        
-        DAYS SINCE SENT: \(outreachRecord.daysSinceContact)
-        
-        Guidelines:
-        - Keep it very brief and polite (3-5 sentences maximum)
-        - Remind them of my initial email about research opportunities
-        - Ask if they've had a chance to review my email
-        - Offer to provide additional information if needed
-        - Thank them for their time
-        """
-        
-        OpenRouterService.shared.generateFollowUpEmail(prompt: followUpPrompt) { result in
+        // Use the new version of generateFollowUpEmail that accepts professor's last name
+        OpenRouterService.shared.generateFollowUpEmail(
+            for: professorLastName,
+            originalEmail: outreachRecord.emailSent,
+            daysSinceContact: outreachRecord.daysSinceContact
+        ) { result in
             DispatchQueue.main.async {
                 isGenerating = false
                 switch result {
                 case .success(let txt):
-                    bodyText = txt
+                    // Remove any subject lines that might have been included
+                    bodyText = removeSubjectLine(from: txt)
                 case .failure(let err):
                     generationError = err.localizedDescription
                 }
             }
         }
+    }
+    
+    private func removeSubjectLine(from text: String) -> String {
+        // Function to remove subject line if it was included anyway
+        let lines = text.components(separatedBy: "\n")
+        var result = text
+        
+        // Look for typical subject line patterns in the first few lines
+        for (index, line) in lines.prefix(3).enumerated() {
+            let lowercaseLine = line.lowercased()
+            if lowercaseLine.contains("subject:") ||
+               lowercaseLine.contains("re:") ||
+               lowercaseLine.hasPrefix("subject") {
+                // Remove this line and any empty line after it
+                let componentsToRemove = lines.prefix(index + 2).joined(separator: "\n")
+                result = result.replacingOccurrences(of: componentsToRemove, with: "")
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                break
+            }
+        }
+        
+        return result
     }
     
     private func sendEmail() {
@@ -259,41 +387,5 @@ struct FollowUpEmailView: View {
                 }
             }
         }
-    }
-    
-    // Helper to extract email from name
-    private func extractEmailFromName() {
-        let name = outreachRecord.professorName.lowercased()
-        let components = name.components(separatedBy: " ")
-        
-        if components.count >= 2 {
-            let firstName = components.first ?? ""
-            let lastName = components.last ?? ""
-            
-            if !firstName.isEmpty && !lastName.isEmpty {
-                recipient = "\(firstName).\(lastName)@university.edu"
-            } else {
-                recipient = "\(name.replacingOccurrences(of: " ", with: ""))@university.edu"
-            }
-        } else {
-            recipient = "\(name.replacingOccurrences(of: " ", with: ""))@university.edu"
-        }
-    }
-    
-    // Helper to extract subject from original email
-    private func extractSubject() -> String {
-        let originalEmail = outreachRecord.emailSent
-        
-        // Look for research-related keywords in the first few lines
-        let lines = originalEmail.split(separator: "\n", maxSplits: 5, omittingEmptySubsequences: true)
-        
-        for line in lines {
-            let lineText = String(line).trimmingCharacters(in: .whitespacesAndNewlines)
-            if lineText.lowercased().contains("research") {
-                return lineText
-            }
-        }
-        
-        return "Research Inquiry"
     }
 }

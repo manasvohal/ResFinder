@@ -77,13 +77,13 @@ class FirebaseService {
     
     // MARK: - Professor Outreach Tracking
     
-    func saveOutreachRecord(professorId: String, professorName: String, emailSent: String, dateEmailed: Date, completion: @escaping (Result<String, Error>) -> Void) {
+    func saveOutreachRecord(professorId: String, professorName: String, emailSent: String, dateEmailed: Date, profileUrl: URL? = nil, completion: @escaping (Result<String, Error>) -> Void) {
         guard let userId = Auth.auth().currentUser?.uid else {
             completion(.failure(NSError(domain: "FirebaseService", code: -1, userInfo: [NSLocalizedDescriptionKey: "User not logged in"])))
             return
         }
         
-        let outreachData: [String: Any] = [
+        var outreachData: [String: Any] = [
             "professorId": professorId,
             "professorName": professorName,
             "emailSent": emailSent,
@@ -92,6 +92,11 @@ class FirebaseService {
             "followUpEmailSent": "",
             "followUpDate": NSNull()
         ]
+        
+        // Add profileUrl if available
+        if let urlString = profileUrl?.absoluteString {
+            outreachData["profileUrl"] = urlString
+        }
         
         // Add to user's outreach collection
         // Fix: Use the correct closure type for addDocument and capture self explicitly
@@ -124,6 +129,7 @@ class FirebaseService {
                 }
         }
     }
+    
     func getOutreachRecords(completion: @escaping (Result<[OutreachRecord], Error>) -> Void) {
         guard let userId = Auth.auth().currentUser?.uid else {
             completion(.failure(NSError(domain: "FirebaseService", code: -1, userInfo: [NSLocalizedDescriptionKey: "User not logged in"])))
@@ -158,6 +164,12 @@ class FirebaseService {
                 let followUpEmailSent = data["followUpEmailSent"] as? String ?? ""
                 let followUpDate = (data["followUpDate"] as? Timestamp)?.dateValue()
                 
+                // Handle optional profileUrl
+                var profileUrl: URL? = nil
+                if let urlString = data["profileUrl"] as? String {
+                    profileUrl = URL(string: urlString)
+                }
+                
                 return OutreachRecord(
                     id: document.documentID,
                     professorId: professorId,
@@ -166,7 +178,8 @@ class FirebaseService {
                     dateEmailed: dateEmailed,
                     hasFollowedUp: hasFollowedUp,
                     followUpEmailSent: followUpEmailSent,
-                    followUpDate: followUpDate
+                    followUpDate: followUpDate,
+                    profileUrl: profileUrl
                 )
             }
             
@@ -207,6 +220,7 @@ struct OutreachRecord: Identifiable {
     let hasFollowedUp: Bool
     let followUpEmailSent: String
     let followUpDate: Date?
+    let profileUrl: URL?  // This property is correct
     
     var daysSinceContact: Int {
         let calendar = Calendar.current

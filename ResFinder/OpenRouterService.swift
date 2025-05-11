@@ -7,6 +7,7 @@ class OpenRouterService {
     
     /// Generates an email body via OpenRouter
     func generateEmailBody(for researchAreas: [String],
+                          professorLastName: String = "",
                           completion: @escaping (Result<String, Error>) -> Void) {
         // Get user information from UserDefaults
         let userName = UserDefaults.standard.string(forKey: "userName") ?? ""
@@ -34,10 +35,11 @@ class OpenRouterService {
         \(userResume)
         
         PROFESSOR'S RESEARCH AREAS: \(researchInterests)
+        PROFESSOR'S LAST NAME: \(professorLastName)
         
         Use this exact format (do NOT include a subject line):
         
-        Dear Professor XXX,
+        Dear Professor \(professorLastName.isEmpty ? "XXX" : professorLastName),
         
         I hope that you are doing well. I am a [YEAR] studying [MAJOR] and am interested in your research on [RESEARCH AREA]. [1-2 SENTENCES CONNECTING STUDENT'S RESUME EXPERIENCE TO PROFESSOR'S RESEARCH].
         
@@ -55,6 +57,32 @@ class OpenRouterService {
     /// Generates a follow-up email via OpenRouter
     func generateFollowUpEmail(prompt: String, completion: @escaping (Result<String, Error>) -> Void) {
         sendRequest(prompt: prompt, completion: completion)
+    }
+    
+    /// Generates a follow-up email with professor's last name
+    func generateFollowUpEmail(for professorLastName: String, originalEmail: String, daysSinceContact: Int, completion: @escaping (Result<String, Error>) -> Void) {
+        // Create prompt for follow-up email with professor's last name
+        let followUpPrompt = """
+        Generate a brief follow-up email for a professor I contacted about research opportunities.
+        
+        ORIGINAL EMAIL I SENT:
+        \(originalEmail)
+        
+        DAYS SINCE SENT: \(daysSinceContact)
+        
+        PROFESSOR'S LAST NAME: \(professorLastName)
+        
+        Guidelines:
+        - Keep it very brief and polite (3-5 sentences maximum)
+        - DO NOT include a subject line in the body text
+        - Start with "Dear Professor \(professorLastName),"
+        - Remind them of my initial email about research opportunities
+        - Ask if they've had a chance to review my email
+        - Offer to provide additional information if needed
+        - Thank them for their time
+        """
+        
+        sendRequest(prompt: followUpPrompt, completion: completion)
     }
     
     // Helper method to send request to OpenRouter API

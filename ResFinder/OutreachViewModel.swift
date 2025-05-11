@@ -28,11 +28,15 @@ class OutreachViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
         
+        // Print statement for debugging
+        print("Saving outreach with professor URL: \(professor.profileUrl)")
+        
         FirebaseService.shared.saveOutreachRecord(
             professorId: professor.id,
             professorName: professor.name,
             emailSent: emailSent,
-            dateEmailed: Date()
+            dateEmailed: Date(),
+            profileUrl: professor.profileUrl
         ) { [weak self] result in
             DispatchQueue.main.async {
                 self?.isLoading = false
@@ -69,5 +73,22 @@ class OutreachViewModel: ObservableObject {
             }
         }
     }
+    
+    // Helper function to fetch a professor's details by ID
+    func fetchProfessorDetails(byId professorId: String, completion: @escaping (Professor?) -> Void) {
+        // Make an API call to fetch professor details
+        APIClient.fetchProfessors { result in
+            switch result {
+            case .success(let response):
+                // Find the professor with the matching ID
+                if let professor = response.professors.first(where: { $0.id == professorId }) {
+                    completion(professor)
+                } else {
+                    completion(nil)
+                }
+            case .failure(_):
+                completion(nil)
+            }
+        }
+    }
 }
-
