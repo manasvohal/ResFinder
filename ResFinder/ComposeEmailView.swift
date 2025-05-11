@@ -24,98 +24,172 @@ struct ComposeEmailView: View {
             CommonNavigationHeader(title: "Email \(prof.name)")
                 .environmentObject(authViewModel)
             
-            Form {
-                Section(header: Text("To").foregroundColor(.red)) {
-                    TextField("prof@example.edu", text: $recipient)
-                        .keyboardType(.emailAddress)
-                        .autocapitalization(.none)
-                        .disableAutocorrection(true)
-                }
-                
-                Section(header: Text("Subject").foregroundColor(.red)) {
-                    TextField("", text: $subject)
-                }
-                
-                Section(header: Text("Body").foregroundColor(.red)) {
-                    if isGenerating {
-                        HStack {
-                            Spacer()
-                            VStack {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .red))
-                                Text("Generating personalized email...")
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Add professor's website link and note
+                    VStack(alignment: .leading, spacing: 8) {
+                        // Professor website link
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Image(systemName: "info.circle")
+                                    .foregroundColor(.blue)
+                                Text("Need the professor's email? Find it on their website:")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
-                                    .padding(.top, 4)
                             }
-                            Spacer()
+                            
+                            Link(destination: prof.profileUrl) {
+                                HStack {
+                                    Image(systemName: "globe")
+                                        .foregroundColor(.blue)
+                                    Text("Visit \(prof.name)'s Website")
+                                        .foregroundColor(.blue)
+                                        .underline()
+                                    Spacer()
+                                    Image(systemName: "arrow.up.right.square")
+                                        .foregroundColor(.blue)
+                                }
+                                .padding(10)
+                                .background(Color.blue.opacity(0.1))
+                                .cornerRadius(8)
+                            }
                         }
-                        .frame(height: 150)
-                    } else {
-                        TextEditor(text: $bodyText)
-                            .frame(minHeight: 200)
+                        .padding(.horizontal)
+                        .padding(.top, 12)
                     }
                     
-                    if let err = generationError {
-                        Text(err)
-                            .foregroundColor(.red)
-                            .font(.caption)
+                    // Email form
+                    VStack(spacing: 16) {
+                        // To field
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("To")
+                                .font(.headline)
+                                .foregroundColor(.red)
+                            
+                            TextField("prof@example.edu", text: $recipient)
+                                .padding()
+                                .background(Color(.systemGray6))
+                                .cornerRadius(10)
+                                .keyboardType(.emailAddress)
+                                .autocapitalization(.none)
+                                .disableAutocorrection(true)
+                        }
+                        .padding(.horizontal)
+                        
+                        // Subject field
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Subject")
+                                .font(.headline)
+                                .foregroundColor(.red)
+                            
+                            TextField("", text: $subject)
+                                .padding()
+                                .background(Color(.systemGray6))
+                                .cornerRadius(10)
+                        }
+                        .padding(.horizontal)
+                        
+                        // Body field
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Body")
+                                .font(.headline)
+                                .foregroundColor(.red)
+                            
+                            if isGenerating {
+                                HStack {
+                                    Spacer()
+                                    VStack {
+                                        ProgressView()
+                                            .progressViewStyle(CircularProgressViewStyle(tint: .red))
+                                        Text("Generating personalized email...")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                            .padding(.top, 4)
+                                    }
+                                    .padding(40)
+                                    Spacer()
+                                }
+                                .background(Color(.systemGray6))
+                                .cornerRadius(10)
+                                .frame(height: 200)
+                            } else {
+                                TextEditor(text: $bodyText)
+                                    .frame(minHeight: 200)
+                                    .padding(2)
+                                    .background(Color(.systemGray6))
+                                    .cornerRadius(10)
+                            }
+                            
+                            if let err = generationError {
+                                Text(err)
+                                    .foregroundColor(.red)
+                                    .font(.caption)
+                            }
+                            
+                            if !hasUploadedResume {
+                                HStack {
+                                    Image(systemName: "info.circle")
+                                        .foregroundColor(.orange)
+                                    Text("Resume data unavailable. Your email may not be fully personalized.")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding(.top, 4)
+                            }
+                        }
+                        .padding(.horizontal)
                     }
                     
-                    if !hasUploadedResume {
-                        HStack {
-                            Image(systemName: "info.circle")
-                                .foregroundColor(.orange)
-                            Text("Resume data unavailable. Your email may not be fully personalized.")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                    // Buttons
+                    VStack(spacing: 12) {
+                        // Generate button - styled like follow-up view
+                        Button(action: {
+                            generateTemplate()
+                        }) {
+                            HStack {
+                                Image(systemName: "sparkles")
+                                Text(hasUploadedResume ? "Generate Personalized Email" : "Generate Template")
+                                    .fontWeight(.medium)
+                            }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(isGenerating ? Color.gray : Color.orange)
+                            .cornerRadius(10)
                         }
-                        .padding(.top, 4)
+                        .disabled(isGenerating)
+                        .padding(.horizontal)
+                        
+                        // Send button - styled like follow-up view
+                        Button(action: {
+                            if isValidEmail(recipient) {
+                                sendEmail()
+                            } else {
+                                showingMailAlert = true
+                            }
+                        }) {
+                            HStack {
+                                Image(systemName: "paperplane.fill")
+                                Text("Send Email")
+                                    .fontWeight(.medium)
+                            }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(recipient.isEmpty || subject.isEmpty || bodyText.isEmpty ? Color.gray : Color.blue)
+                            .cornerRadius(10)
+                        }
+                        .disabled(recipient.isEmpty || subject.isEmpty || bodyText.isEmpty)
+                        .padding(.horizontal)
                     }
+                    .padding(.vertical, 20)
                 }
-                
-                Section {
-                    Button(action: {
-                        generateTemplate()
-                    }) {
-                        HStack {
-                            Spacer()
-                            Text(hasUploadedResume ? "Generate Personalized Email" : "Generate Template")
-                                .foregroundColor(.white)
-                            Spacer()
-                        }
-                        .padding(.vertical, 10)
-                        .background(isGenerating ? Color.gray : Color.red)
-                        .cornerRadius(8)
-                    }
-                    .disabled(isGenerating)
-                    .listRowBackground(Color.clear)
-                    
-                    Button(action: {
-                        if isValidEmail(recipient) {
-                            sendEmail()
-                        } else {
-                            showingMailAlert = true
-                        }
-                    }) {
-                        HStack {
-                            Spacer()
-                            Text("Send Email")
-                                .foregroundColor(.white)
-                            Spacer()
-                        }
-                        .padding(.vertical, 10)
-                        .background(recipient.isEmpty || subject.isEmpty || bodyText.isEmpty ? Color.gray : Color.black)
-                        .cornerRadius(8)
-                    }
-                    .disabled(recipient.isEmpty || subject.isEmpty || bodyText.isEmpty)
-                    .listRowBackground(Color.clear)
-                }
+                .padding(.top, 8)
             }
         }
         .onAppear {
-            // Pre-populate subject with research areas
-            subject = "Inquiry about your research in \(prof.researchAreas.joined(separator: ", "))"
+            // Use a simple, generic subject line without any specific research areas
+            subject = "Research Interest"
             
             // Pre-populate recipient if available in the professor data
             if let email = prof.profileUrl.absoluteString.components(separatedBy: "mailto:").last,
@@ -161,7 +235,10 @@ struct ComposeEmailView: View {
         isGenerating = true
         generationError = nil
         
-        OpenRouterService.shared.generateEmailBody(for: prof.researchAreas) { result in
+        // Get professor's last name for greeting
+        let lastName = extractLastName(from: prof.name)
+        
+        OpenRouterService.shared.generateEmailBody(for: prof.researchAreas, professorLastName: lastName) { result in
             DispatchQueue.main.async {
                 isGenerating = false
                 switch result {
@@ -172,6 +249,14 @@ struct ComposeEmailView: View {
                 }
             }
         }
+    }
+    
+    private func extractLastName(from fullName: String) -> String {
+        let components = fullName.components(separatedBy: " ")
+        if components.count > 1 {
+            return components.last ?? ""
+        }
+        return fullName
     }
     
     private func sendEmail() {
@@ -220,3 +305,4 @@ struct ComposeEmailView_Previews: PreviewProvider {
         }
     }
 }
+
