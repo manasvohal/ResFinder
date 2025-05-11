@@ -2,6 +2,8 @@ import SwiftUI
 
 struct LandingView: View {
     @State private var showAuthFlow = false
+    @State private var isActive = false
+    @AppStorage("hasUploadedResume") private var hasUploadedResume = false
     @EnvironmentObject var authViewModel: AuthViewModel
 
     var body: some View {
@@ -43,7 +45,13 @@ struct LandingView: View {
                     // Get Started button
                     Button(action: {
                         withAnimation {
-                            showAuthFlow = true
+                            if authViewModel.isAuthenticated && hasUploadedResume {
+                                // User is already authenticated and has resume, go to content
+                                isActive = true
+                            } else {
+                                // User needs to authenticate
+                                showAuthFlow = true
+                            }
                         }
                     }) {
                         Text("Get Started")
@@ -56,6 +64,12 @@ struct LandingView: View {
                             .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 4)
                     }
 
+                    // Debug auth state - remove in production
+                    Text(authViewModel.isAuthenticated ? "Signed in as: \(authViewModel.user?.email ?? "Unknown")" : "Not signed in")
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.7))
+                        .padding(.top, 10)
+
                     Spacer()
                 }
                 .padding()
@@ -66,19 +80,28 @@ struct LandingView: View {
                 AuthContainerView()
                     .environmentObject(authViewModel)
             }
+            .background(
+                NavigationLink(
+                    destination: ContentView()
+                        .navigationBarBackButtonHidden(true)
+                        .environmentObject(authViewModel),
+                    isActive: $isActive
+                ) {
+                    EmptyView()
+                }
+            )
         }
         .navigationViewStyle(StackNavigationViewStyle())
-        // If user is already authenticated, skip directly to ContentView
+        // Check if user is already authenticated on appear
         .onAppear {
-            if authViewModel.isAuthenticated && hasUploadedResume {
-                // User is already logged in and has a resume, so redirect to ContentView
-                showAuthFlow = true
+            print("LandingView: onAppear - Auth state: \(authViewModel.isAuthenticated), Resume: \(hasUploadedResume)")
+            
+            // Small delay to ensure auth state is updated
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                if authViewModel.isAuthenticated && hasUploadedResume {
+                    isActive = true
+                }
             }
         }
-    }
-    
-    // Check if user has uploaded a resume
-    private var hasUploadedResume: Bool {
-        return UserDefaults.standard.bool(forKey: "hasUploadedResume")
     }
 }

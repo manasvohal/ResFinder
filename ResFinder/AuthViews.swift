@@ -5,6 +5,7 @@ struct AuthContainerView: View {
     @State private var showingLogin = true
     @State private var showResumeUpload = false
     @State private var showSchoolSelection = false
+    @State private var debugMessage = "Waiting for auth..."
     
     var body: some View {
         VStack(spacing: 0) {
@@ -16,6 +17,13 @@ struct AuthContainerView: View {
                     .foregroundColor(.white)
                 
                 Spacer()
+                
+                // Debug info - remove in production
+                if debugMessage != "Waiting for auth..." {
+                    Text(debugMessage)
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.8))
+                }
             }
             .padding(.horizontal)
             .padding(.vertical, 16)
@@ -23,13 +31,41 @@ struct AuthContainerView: View {
             
             if showingLogin {
                 LoginView(showSignUp: $showingLogin)
+                    .environmentObject(authViewModel)
             } else {
                 SignUpView(showSignIn: $showingLogin)
+                    .environmentObject(authViewModel)
             }
+            
+            // Debug controls - remove in production
+            HStack {
+                Text("Auth: \(authViewModel.isAuthenticated ? "Yes" : "No")")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                Spacer()
+                
+                if authViewModel.isAuthenticated {
+                    Button("Manual Continue") {
+                        showResumeUpload = true
+                    }
+                    .font(.caption)
+                    .padding(6)
+                    .background(Color.green.opacity(0.2))
+                    .cornerRadius(4)
+                }
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 8)
         }
-        .onChange(of: authViewModel.isAuthenticated) { isAuthenticated in
+        .onReceive(authViewModel.$isAuthenticated) { isAuthenticated in
+            self.debugMessage = isAuthenticated ? "Authenticated ✓" : "Not authenticated"
+            print("AuthContainerView: isAuthenticated changed to \(isAuthenticated)")
+            
             if isAuthenticated {
-                showResumeUpload = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    showResumeUpload = true
+                }
             }
         }
         .fullScreenCover(isPresented: $showResumeUpload) {
@@ -58,6 +94,7 @@ struct LoginView: View {
     @State private var email = ""
     @State private var password = ""
     @Binding var showSignUp: Bool
+    @State private var authState = "Not authenticated"
     
     var body: some View {
         ScrollView {
@@ -84,6 +121,11 @@ struct LoginView: View {
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
                     }
+                    
+                    // Debug auth state info - can remove after fixing
+                    Text("Auth State: \(authState)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
                 .padding(.horizontal)
                 
@@ -124,6 +166,10 @@ struct LoginView: View {
                 Spacer()
             }
             .padding(.top, 40)
+            .onReceive(authViewModel.$isAuthenticated) { isAuthenticated in
+                self.authState = isAuthenticated ? "Authenticated" : "Not authenticated"
+                print("LoginView: Auth state changed to \(isAuthenticated)")
+            }
         }
     }
 }

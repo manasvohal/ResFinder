@@ -23,6 +23,7 @@
 		3696186A2DD019AB004986F4 /* FollowUpEmail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369618692DD019A0004986F4 /* FollowUpEmail.swift */; };
 		3696186E2DD0219B004986F4 /* CommonNavigationHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3696186D2DD02196004986F4 /* CommonNavigationHeader.swift */; };
 		369618702DD024AC004986F4 /* ProfileButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3696186F2DD024A9004986F4 /* ProfileButton.swift */; };
+		369618722DD12E88004986F4 /* EnhancedOutreachRecordRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369618712DD12E86004986F4 /* EnhancedOutreachRecordRow.swift */; };
 		E90694052DC8633F00324117 /* ResFinderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90694042DC8633F00324117 /* ResFinderApp.swift */; };
 		E90694072DC8633F00324117 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90694062DC8633F00324117 /* ContentView.swift */; };
 		E90694092DC8634100324117 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E90694082DC8634100324117 /* Assets.xcassets */; };
@@ -70,6 +71,7 @@
 		369618692DD019A0004986F4 /* FollowUpEmail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowUpEmail.swift; sourceTree = "<group>"; };
 		3696186D2DD02196004986F4 /* CommonNavigationHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonNavigationHeader.swift; sourceTree = "<group>"; };
 		3696186F2DD024A9004986F4 /* ProfileButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileButton.swift; sourceTree = "<group>"; };
+		369618712DD12E86004986F4 /* EnhancedOutreachRecordRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnhancedOutreachRecordRow.swift; sourceTree = "<group>"; };
 		E90694012DC8633F00324117 /* ResFinder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ResFinder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E90694042DC8633F00324117 /* ResFinderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResFinderApp.swift; sourceTree = "<group>"; };
 		E90694062DC8633F00324117 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -151,6 +153,7 @@
 				369618612DD01918004986F4 /* AuthViewModel.swift */,
 				369618632DD01937004986F4 /* AuthViews.swift */,
 				369618652DD01957004986F4 /* OutreachViewModel.swift */,
+				369618712DD12E86004986F4 /* EnhancedOutreachRecordRow.swift */,
 				369618672DD0196E004986F4 /* ProfileView.swift */,
 				369618692DD019A0004986F4 /* FollowUpEmail.swift */,
 				E90694062DC8633F00324117 /* ContentView.swift */,
@@ -335,6 +338,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				369618722DD12E88004986F4 /* EnhancedOutreachRecordRow.swift in Sources */,
 				E90694382DC86ECF00324117 /* ProfessorsListView.swift in Sources */,
 				E90694522DC9291400324117 /* ComposeEmailView.swift in Sources */,
 				E906943A2DC875E400324117 /* DetailView.swift in Sources */,

@@ -15,117 +15,182 @@ struct FollowUpEmailView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Use common navigation header
-            CommonNavigationHeader(title: "Follow-up: \(outreachRecord.professorName)")
-                .environmentObject(authViewModel)
-            
-            Form {
-                Section(header: Text("Original Email").foregroundColor(.red)) {
-                    Text(outreachRecord.emailSent)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .padding(.vertical, 4)
-                }
-                
-                Section(header: Text("To").foregroundColor(.red)) {
-                    TextField("prof@example.edu", text: $recipient)
-                        .keyboardType(.emailAddress)
-                        .autocapitalization(.none)
-                        .disableAutocorrection(true)
-                }
-                
-                Section(header: Text("Subject").foregroundColor(.red)) {
-                    TextField("", text: $subject)
-                }
-                
-                Section(header: Text("Follow-up Email").foregroundColor(.red)) {
-                    if isGenerating {
+        ScrollView {
+            VStack(spacing: 0) {
+                // Header with red background
+                HStack {
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
                         HStack {
-                            Spacer()
-                            VStack {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .red))
-                                Text("Generating follow-up email...")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                    .padding(.top, 4)
+                            Image(systemName: "chevron.left")
+                            Text("Back")
+                        }
+                        .foregroundColor(.white)
+                    }
+                    
+                    Spacer()
+                    
+                    Text("Follow-up Email")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                    
+                    Spacer()
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 16)
+                .background(Color.red)
+                
+                VStack(spacing: 20) {
+                    // Original email info
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Following up with: \(outreachRecord.professorName)")
+                            .font(.headline)
+                            .padding(.top, 8)
+                        
+                        Text("Original email sent \(outreachRecord.daysSinceContact) days ago")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+                    
+                    // Email form
+                    VStack(spacing: 16) {
+                        // To field
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("To")
+                                .font(.headline)
+                                .foregroundColor(.red)
+                            
+                            TextField("professor@university.edu", text: $recipient)
+                                .padding()
+                                .background(Color(.systemGray6))
+                                .cornerRadius(10)
+                        }
+                        .padding(.horizontal)
+                        
+                        // Subject field
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Subject")
+                                .font(.headline)
+                                .foregroundColor(.red)
+                            
+                            TextField("Re: Research Inquiry", text: $subject)
+                                .padding()
+                                .background(Color(.systemGray6))
+                                .cornerRadius(10)
+                        }
+                        .padding(.horizontal)
+                        
+                        // Body field
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Message")
+                                .font(.headline)
+                                .foregroundColor(.red)
+                            
+                            if isGenerating {
+                                HStack {
+                                    Spacer()
+                                    VStack {
+                                        ProgressView()
+                                            .progressViewStyle(CircularProgressViewStyle(tint: .red))
+                                        Text("Generating follow-up email...")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                            .padding(.top, 4)
+                                    }
+                                    .padding(40)
+                                    Spacer()
+                                }
+                                .background(Color(.systemGray6))
+                                .cornerRadius(10)
+                                .frame(height: 200)
+                            } else {
+                                TextEditor(text: $bodyText)
+                                    .frame(minHeight: 200)
+                                    .padding(2)
+                                    .background(Color(.systemGray6))
+                                    .cornerRadius(10)
                             }
-                            Spacer()
+                            
+                            if let err = generationError {
+                                Text(err)
+                                    .foregroundColor(.red)
+                                    .font(.caption)
+                            }
                         }
-                        .frame(height: 150)
-                    } else {
-                        TextEditor(text: $bodyText)
-                            .frame(minHeight: 200)
+                        .padding(.horizontal)
                     }
                     
-                    if let err = generationError {
-                        Text(err)
-                            .foregroundColor(.red)
-                            .font(.caption)
-                    }
-                }
-                
-                Section {
-                    Button(action: {
-                        generateFollowUpTemplate()
-                    }) {
-                        HStack {
-                            Spacer()
-                            Text("Generate Follow-up Email")
-                                .foregroundColor(.white)
-                            Spacer()
+                    // Buttons
+                    VStack(spacing: 12) {
+                        Button(action: {
+                            generateFollowUpTemplate()
+                        }) {
+                            HStack {
+                                Image(systemName: "sparkles")
+                                Text("Generate Brief Follow-up")
+                                    .fontWeight(.medium)
+                            }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(isGenerating ? Color.gray : Color.orange)
+                            .cornerRadius(10)
                         }
-                        .padding(.vertical, 10)
-                        .background(isGenerating ? Color.gray : Color.red)
-                        .cornerRadius(8)
-                    }
-                    .disabled(isGenerating)
-                    .listRowBackground(Color.clear)
-                    
-                    Button(action: {
-                        if isValidEmail(recipient) {
-                            sendEmail()
-                        } else {
-                            showingMailAlert = true
+                        .disabled(isGenerating)
+                        .padding(.horizontal)
+                        
+                        Button(action: {
+                            if isValidEmail(recipient) {
+                                sendEmail()
+                            } else {
+                                showingMailAlert = true
+                            }
+                        }) {
+                            HStack {
+                                Image(systemName: "paperplane.fill")
+                                Text("Send Follow-up Email")
+                                    .fontWeight(.medium)
+                            }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(recipient.isEmpty || subject.isEmpty || bodyText.isEmpty ? Color.gray : Color.blue)
+                            .cornerRadius(10)
                         }
-                    }) {
-                        HStack {
-                            Spacer()
-                            Text("Send Follow-up Email")
-                                .foregroundColor(.white)
-                            Spacer()
-                        }
-                        .padding(.vertical, 10)
-                        .background(recipient.isEmpty || subject.isEmpty || bodyText.isEmpty ? Color.gray : Color.black)
-                        .cornerRadius(8)
+                        .disabled(recipient.isEmpty || subject.isEmpty || bodyText.isEmpty)
+                        .padding(.horizontal)
                     }
-                    .disabled(recipient.isEmpty || subject.isEmpty || bodyText.isEmpty)
-                    .listRowBackground(Color.clear)
-                    .alert(isPresented: $showingMailAlert) {
-                        Alert(
-                            title: Text("Invalid Email"),
-                            message: Text("Please enter a valid email address."),
-                            dismissButton: .default(Text("OK"))
-                        )
-                    }
+                    .padding(.vertical, 20)
                 }
             }
         }
         .onAppear {
             // Pre-populate subject with "Follow-up"
-            subject = "Follow-up: Research Inquiry"
+            subject = "Follow-up: \(extractSubject())"
             
-            // Extract email from the professor name if possible
-            // This is a simplified approach - in a real app you might want to store the email address in the OutreachRecord
-            let possibleEmail = outreachRecord.professorName.lowercased().filter { $0 != " " } + "@university.edu"
-            if isValidEmail(possibleEmail) {
-                recipient = possibleEmail
+            // Try to extract email from professor name
+            extractEmailFromName()
+            
+            // Generate template automatically on appear
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                generateFollowUpTemplate()
             }
+        }
+        .alert(isPresented: $showingMailAlert) {
+            Alert(
+                title: Text("Invalid Email"),
+                message: Text("Please enter a valid email address."),
+                dismissButton: .default(Text("OK"))
+            )
         }
         .alert(isPresented: $showingSuccessAlert) {
             Alert(
-                title: Text("Follow-up Recorded"),
+                title: Text("Follow-up Sent"),
                 message: Text("Your follow-up email has been sent and recorded."),
                 dismissButton: .default(Text("OK")) {
                     presentationMode.wrappedValue.dismiss()
@@ -135,6 +200,7 @@ struct FollowUpEmailView: View {
         .navigationBarHidden(true)
     }
     
+    // Helper methods
     private func isValidEmail(_ email: String) -> Bool {
         let emailRegEx = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
         let emailPred = NSPredicate(format:"SELF MATCHES %@", emailRegEx)
@@ -147,7 +213,7 @@ struct FollowUpEmailView: View {
         
         // Create prompt for follow-up email
         let followUpPrompt = """
-        Generate a follow-up email for a professor I contacted about research opportunities.
+        Generate a brief follow-up email for a professor I contacted about research opportunities.
         
         ORIGINAL EMAIL I SENT:
         \(outreachRecord.emailSent)
@@ -155,9 +221,8 @@ struct FollowUpEmailView: View {
         DAYS SINCE SENT: \(outreachRecord.daysSinceContact)
         
         Guidelines:
-        - Keep it brief and polite
-        - Remind the professor of my initial email
-        - Express continued interest
+        - Keep it very brief and polite (3-5 sentences maximum)
+        - Remind them of my initial email about research opportunities
         - Ask if they've had a chance to review my email
         - Offer to provide additional information if needed
         - Thank them for their time
@@ -194,5 +259,41 @@ struct FollowUpEmailView: View {
                 }
             }
         }
+    }
+    
+    // Helper to extract email from name
+    private func extractEmailFromName() {
+        let name = outreachRecord.professorName.lowercased()
+        let components = name.components(separatedBy: " ")
+        
+        if components.count >= 2 {
+            let firstName = components.first ?? ""
+            let lastName = components.last ?? ""
+            
+            if !firstName.isEmpty && !lastName.isEmpty {
+                recipient = "\(firstName).\(lastName)@university.edu"
+            } else {
+                recipient = "\(name.replacingOccurrences(of: " ", with: ""))@university.edu"
+            }
+        } else {
+            recipient = "\(name.replacingOccurrences(of: " ", with: ""))@university.edu"
+        }
+    }
+    
+    // Helper to extract subject from original email
+    private func extractSubject() -> String {
+        let originalEmail = outreachRecord.emailSent
+        
+        // Look for research-related keywords in the first few lines
+        let lines = originalEmail.split(separator: "\n", maxSplits: 5, omittingEmptySubsequences: true)
+        
+        for line in lines {
+            let lineText = String(line).trimmingCharacters(in: .whitespacesAndNewlines)
+            if lineText.lowercased().contains("research") {
+                return lineText
+            }
+        }
+        
+        return "Research Inquiry"
     }
 }

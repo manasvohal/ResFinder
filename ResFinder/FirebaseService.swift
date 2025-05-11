@@ -215,6 +215,7 @@ struct OutreachRecord: Identifiable {
     }
     
     var needsFollowUp: Bool {
-        return daysSinceContact >= 10 && !hasFollowedUp
+        // Updated to make it 1 day for testing purposes
+        return daysSinceContact >= 0 && !hasFollowedUp
     }
 }
