@@ -6,6 +6,7 @@ struct ProfessorsListView: View {
     
     @StateObject private var vm = ProfessorsViewModel()
     @State private var searchText = ""
+    @EnvironmentObject var authViewModel: AuthViewModel
     
     // Filter professors
     private var filteredProfessors: [Professor] {
@@ -31,11 +32,9 @@ struct ProfessorsListView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Red header bar
-            Rectangle()
-                .fill(Color.red)
-                .frame(height: 1)
-                .padding(.top, 1)
+            // Use common navigation header
+            CommonNavigationHeader(title: "\(school) Faculty")
+                .environmentObject(authViewModel)
             
             // Search bar
             HStack {
@@ -119,7 +118,7 @@ struct ProfessorsListView: View {
                 // Professor list
                 List {
                     ForEach(filteredProfessors) { prof in
-                        NavigationLink(destination: DetailView(prof: prof)) {
+                        NavigationLink(destination: DetailView(prof: prof).environmentObject(authViewModel)) {
                             ProfessorRowView(professor: prof)
                         }
                     }
@@ -127,9 +126,9 @@ struct ProfessorsListView: View {
                 .listStyle(InsetGroupedListStyle())
             }
         }
-        .navigationTitle("\(school) Faculty")
         .background(Color(.systemGroupedBackground).ignoresSafeArea())
         .onAppear { vm.load() }
+        .navigationBarHidden(true)
     }
 }
 

@@ -3,8 +3,9 @@ import UniformTypeIdentifiers
 import PDFKit
 
 struct ResumeUploadView: View {
-    var destinationView: AnyView
+    var destinationView: AnyView? = nil
     var isSheet: Bool = false
+    var onComplete: (() -> Void)? = nil
     
     @State private var name = ""
     @State private var major = ""
@@ -24,276 +25,192 @@ struct ResumeUploadView: View {
     @AppStorage("resumeFileName") private var savedResumeFileName = ""
     @AppStorage("hasUploadedResume") private var hasUploadedResume = false
     
+    @EnvironmentObject var authViewModel: AuthViewModel
     @Environment(\.presentationMode) var presentationMode
     
-    // Year options
-    let yearOptions = ["Freshman", "Sophomore", "Junior", "Senior", "Graduate Student", "PhD Student"]
-    
     var body: some View {
-        VStack(spacing: 0) {
-            // Header with red background
-            VStack {
-                Text(isSheet ? "Update Your Resume" : "Upload Your Resume")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
+        NavigationView {
+            VStack(spacing: 0) {
+                // Header with red background and profile button
+                HStack {
+                    Text(isSheet ? "Update Your Resume" : "Upload Your Resume")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
                     
-                if isSheet {
-                    Text("Edit your information")
-                        .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.8))
+                    Spacer()
+                    
+                    // Profile button if authenticated
+                    if authViewModel.isAuthenticated {
+                        // Use the ProfileButton component defined in ProfileButton.swift
+                        ProfileButton()
+                    }
                 }
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
-            .background(Color.red)
-            
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    // Instructions section
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Personal Information")
-                            .font(.headline)
-                            .foregroundColor(.red)
-                        
-                        // Name field
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Full Name")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            
-                            TextField("Your full name", text: $name)
-                                .padding()
-                                .background(Color(.systemGray6))
-                                .cornerRadius(10)
-                                .onAppear {
-                                    if name.isEmpty && !savedName.isEmpty {
-                                        name = savedName
-                                    }
-                                }
-                        }
-                        
-                        // Major field
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Major")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            
-                            TextField("Your major (e.g., Computer Science)", text: $major)
-                                .padding()
-                                .background(Color(.systemGray6))
-                                .cornerRadius(10)
-                                .onAppear {
-                                    if major.isEmpty && !savedMajor.isEmpty {
-                                        major = savedMajor
-                                    }
-                                }
-                        }
-                        
-                        // Year picker
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Academic Year")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            
-                            Picker("Academic Year", selection: $year) {
-                                Text("Select Year").tag("")
-                                ForEach(yearOptions, id: \.self) { year in
-                                    Text(year).tag(year)
-                                }
-                            }
-                            .pickerStyle(MenuPickerStyle())
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .cornerRadius(10)
-                            .onAppear {
-                                if year.isEmpty && !savedYear.isEmpty {
-                                    year = savedYear
-                                }
-                            }
-                        }
-                    }
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(Color(.systemBackground))
-                            .shadow(color: Color.black.opacity(0.07), radius: 8, x: 0, y: 2)
-                    )
-                    
-                    // Resume section
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Resume")
-                            .font(.headline)
-                            .foregroundColor(.red)
-                        
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Please upload your resume as a PDF file. This will be used to personalize email templates when contacting professors.")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                            
-                            // Upload button
-                            Button(action: {
-                                showingDocumentPicker = true
-                            }) {
-                                HStack {
-                                    Image(systemName: (resumeFileName != nil || savedResumeFileName.count > 0) ? "arrow.triangle.2.circlepath" : "doc.badge.plus")
-                                        .font(.headline)
-                                    Text((resumeFileName != nil || savedResumeFileName.count > 0) ? "Change Resume" : "Upload PDF Resume")
-                                        .font(.headline)
-                                }
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.red)
-                                .cornerRadius(10)
-                            }
-                            
-                            // Show file name if uploaded
-                            if resumeFileName != nil || savedResumeFileName.count > 0 {
-                                HStack {
-                                    Image(systemName: "doc.fill")
-                                        .foregroundColor(.red)
-                                    Text(resumeFileName ?? savedResumeFileName)
-                                        .font(.subheadline)
-                                    Spacer()
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(.green)
-                                }
-                                .padding()
-                                .background(Color(.systemGray6))
-                                .cornerRadius(10)
-                            }
-                            
-                            
-                        }
-                    }
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(Color(.systemBackground))
-                            .shadow(color: Color.black.opacity(0.07), radius: 8, x: 0, y: 2)
-                    )
-                    
-                    // Action Buttons
-                    if isSheet {
-                        // Save changes button for sheet mode
-                        Button(action: {
-                            if isFormValid {
-                                saveUserInfo()
-                                presentationMode.wrappedValue.dismiss()
-                            } else {
-                                alertMessage = "Please fill in all fields and upload your resume."
-                                showingAlert = true
-                            }
-                        }) {
-                            Text("Save Changes")
-                                .fontWeight(.semibold)
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(isFormValid ? Color.black : Color.gray)
-                                .cornerRadius(10)
-                        }
-                        .disabled(!isFormValid)
-                        .padding(.top, 8)
-                        
-                        // Cancel button
-                        Button(action: {
-                            presentationMode.wrappedValue.dismiss()
-                        }) {
-                            Text("Cancel")
-                                .fontWeight(.medium)
+                .padding(.horizontal)
+                .padding(.vertical, 16)
+                .background(Color.red)
+                
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 24) {
+                        // Resume section
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Resume")
+                                .font(.headline)
                                 .foregroundColor(.red)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.white)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .stroke(Color.red, lineWidth: 1)
-                                )
-                                .cornerRadius(10)
-                        }
-                        .padding(.top, 8)
-                    } else {
-                        // Continue button for non-sheet mode
-                        Button(action: {
-                            if isFormValid {
-                                saveUserInfo()
-                                isNavigationActive = true
-                            } else {
-                                alertMessage = "Please fill in all fields and upload your resume."
-                                showingAlert = true
+                            
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Please upload your resume as a PDF file. This will be used to personalize email templates when contacting professors.")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                
+                                // Upload button
+                                Button(action: {
+                                    showingDocumentPicker = true
+                                }) {
+                                    HStack {
+                                        Image(systemName: (resumeFileName != nil || savedResumeFileName.count > 0) ? "arrow.triangle.2.circlepath" : "doc.badge.plus")
+                                            .font(.headline)
+                                        Text((resumeFileName != nil || savedResumeFileName.count > 0) ? "Change Resume" : "Upload PDF Resume")
+                                            .font(.headline)
+                                    }
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color.red)
+                                    .cornerRadius(10)
+                                }
+                                
+                                // Show file name if uploaded
+                                if resumeFileName != nil || savedResumeFileName.count > 0 {
+                                    HStack {
+                                        Image(systemName: "doc.fill")
+                                            .foregroundColor(.red)
+                                        Text(resumeFileName ?? savedResumeFileName)
+                                            .font(.subheadline)
+                                        Spacer()
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(.green)
+                                    }
+                                    .padding()
+                                    .background(Color(.systemGray6))
+                                    .cornerRadius(10)
+                                }
+                                
+                                // Continue button
+                                Button(action: {
+                                    if resumeFileName != nil || savedResumeFileName.count > 0 {
+                                        saveUserInfo()
+                                        
+                                        if let onComplete = onComplete {
+                                            onComplete()
+                                        } else if let _ = destinationView {
+                                            isNavigationActive = true
+                                        } else {
+                                            presentationMode.wrappedValue.dismiss()
+                                        }
+                                    } else {
+                                        alertMessage = "Please upload your resume."
+                                        showingAlert = true
+                                    }
+                                }) {
+                                    HStack {
+                                        Text(isSheet ? "Save Changes" : "Continue")
+                                            .fontWeight(.semibold)
+                                        
+                                        if !isSheet {
+                                            Image(systemName: "arrow.right")
+                                        }
+                                    }
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background((resumeFileName != nil || savedResumeFileName.count > 0) ? Color.black : Color.gray)
+                                    .cornerRadius(10)
+                                }
+                                .disabled(!(resumeFileName != nil || savedResumeFileName.count > 0))
+                                .padding(.top, 12)
+                                
+                                if isSheet {
+                                    // Cancel button (only in sheet mode)
+                                    Button(action: {
+                                        presentationMode.wrappedValue.dismiss()
+                                    }) {
+                                        Text("Cancel")
+                                            .fontWeight(.medium)
+                                            .foregroundColor(.red)
+                                            .frame(maxWidth: .infinity)
+                                            .padding()
+                                            .background(Color.white)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 10)
+                                                    .stroke(Color.red, lineWidth: 1)
+                                            )
+                                            .cornerRadius(10)
+                                    }
+                                    .padding(.top, 8)
+                                }
                             }
-                        }) {
-                            HStack {
-                                Text("Continue to School Selection")
-                                    .fontWeight(.semibold)
-                                Image(systemName: "arrow.right")
-                            }
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(isFormValid ? Color.black : Color.gray)
-                            .cornerRadius(10)
                         }
-                        .disabled(!isFormValid)
-                        .padding(.top, 8)
+                        .padding()
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(Color(.systemBackground))
+                                .shadow(color: Color.black.opacity(0.07), radius: 8, x: 0, y: 2)
+                        )
+                    }
+                    .padding()
+                }
+            }
+            .navigationBarHidden(true)
+            .background(Color(.systemGroupedBackground).ignoresSafeArea())
+            .sheet(isPresented: $showingDocumentPicker) {
+                DocumentPicker(
+                    fileURL: $resumeFileURL,
+                    fileName: $resumeFileName,
+                    resumeText: $resumeText
+                )
+            }
+            .alert(isPresented: $showingAlert) {
+                Alert(
+                    title: Text("Missing Information"),
+                    message: Text(alertMessage),
+                    dismissButton: .default(Text("OK"))
+                )
+            }
+            .onAppear {
+                // Pre-fill user info from UserDefaults
+                name = savedName
+                major = savedMajor
+                year = savedYear
+                
+                // Load saved file name on appear
+                if resumeFileName == nil && !savedResumeFileName.isEmpty {
+                    resumeFileName = savedResumeFileName
+                }
+                
+                // Load saved resume text on appear
+                if resumeText.isEmpty && !savedResumeText.isEmpty {
+                    resumeText = savedResumeText
+                }
+            }
+            .background(
+                Group {
+                    if let destinationView = destinationView {
+                        NavigationLink(
+                            destination: destinationView,
+                            isActive: $isNavigationActive
+                        ) {
+                            EmptyView()
+                        }
                     }
                 }
-                .padding()
-            }
-        }
-        .navigationBarTitle("", displayMode: .inline)
-        .navigationBarBackButtonHidden(isSheet ? true : false)
-        .background(Color(.systemGroupedBackground).ignoresSafeArea())
-        .sheet(isPresented: $showingDocumentPicker) {
-            DocumentPicker(
-                fileURL: $resumeFileURL,
-                fileName: $resumeFileName,
-                resumeText: $resumeText
             )
         }
-        .alert(isPresented: $showingAlert) {
-            Alert(
-                title: Text("Missing Information"),
-                message: Text(alertMessage),
-                dismissButton: .default(Text("OK"))
-            )
-        }
-        .onAppear {
-            // Load saved file name on appear
-            if resumeFileName == nil && !savedResumeFileName.isEmpty {
-                resumeFileName = savedResumeFileName
-            }
-            
-            // Load saved resume text on appear
-            if resumeText.isEmpty && !savedResumeText.isEmpty {
-                resumeText = savedResumeText
-            }
-        }
-        .background(
-            NavigationLink(
-                destination: destinationView,
-                isActive: $isNavigationActive
-            ) {
-                EmptyView()
-            }
-            .hidden()
-        )
-    }
-    
-    private var isFormValid: Bool {
-        return !name.isEmpty && !major.isEmpty && !year.isEmpty &&
-               (resumeFileName != nil || !savedResumeFileName.isEmpty)
+        .navigationViewStyle(StackNavigationViewStyle())
     }
     
     private func saveUserInfo() {
-        // Save user info to UserDefaults
-        savedName = name
-        savedMajor = major
-        savedYear = year
-        
         // Save resume info if new file was selected
         if let fileName = resumeFileName {
             savedResumeFileName = fileName

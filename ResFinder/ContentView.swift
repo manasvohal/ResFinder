@@ -10,17 +10,25 @@ struct ContentView: View {
     @State private var showResumeUpload = false
     @AppStorage("hasUploadedResume") private var hasUploadedResume = false
     @AppStorage("userName") private var userName = ""
+    @EnvironmentObject var authViewModel: AuthViewModel
     
     var body: some View {
         VStack(spacing: 0) {
-            // Title with red background
-            Text("Select University")
-                .font(.title2)
-                .fontWeight(.bold)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(Color.red)
+            // Title with red background and profile button
+            HStack {
+                Text("Select University")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                
+                Spacer()
+                
+                // Profile button
+                ProfileButton()
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 16)
+            .background(Color.red)
             
             // Resume info bar
             if hasUploadedResume {
@@ -54,7 +62,7 @@ struct ContentView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     ForEach(schools, id: \.name) { school in
-                        NavigationLink(destination: ResearchAreasSelectionView(school: school.name)) {
+                        NavigationLink(destination: ResearchAreasSelectionView(school: school.name).environmentObject(authViewModel)) {
                             SchoolCardView(name: school.name,
                                           logoName: school.imageName,
                                           description: school.description)
@@ -70,7 +78,8 @@ struct ContentView: View {
         .navigationBarBackButtonHidden(true)
         .background(Color(.systemGroupedBackground).ignoresSafeArea())
         .sheet(isPresented: $showResumeUpload) {
-            ResumeUploadView(destinationView: AnyView(EmptyView()), isSheet: true)
+            ResumeUploadView(isSheet: true)
+                .environmentObject(authViewModel)
         }
     }
 }

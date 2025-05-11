@@ -5,6 +5,7 @@ struct ResearchAreasSelectionView: View {
     @StateObject private var vm = ProfessorsViewModel()
     @State private var selectedAreas = Set<String>()
     @State private var searchText = ""
+    @EnvironmentObject var authViewModel: AuthViewModel
     
     // Filtered research areas
     private var filteredAreas: [String] {
@@ -25,11 +26,9 @@ struct ResearchAreasSelectionView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Red header bar
-            Rectangle()
-                .fill(Color.red)
-                .frame(height: 1)
-                .padding(.top, 1)
+            // Use common navigation header
+            CommonNavigationHeader(title: "\(school) Research Areas")
+                .environmentObject(authViewModel)
             
             // Search field
             HStack {
@@ -125,6 +124,7 @@ struct ResearchAreasSelectionView: View {
                         school: school,
                         researchFilters: Array(selectedAreas)
                     )
+                    .environmentObject(authViewModel)
                 ) {
                     Text(buttonText)
                         .fontWeight(.semibold)
@@ -152,9 +152,9 @@ struct ResearchAreasSelectionView: View {
                     .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: -4)
             )
         }
-        .navigationTitle("\(school) Research Areas")
         .background(Color(.systemGroupedBackground).ignoresSafeArea())
         .onAppear { vm.load() }
+        .navigationBarHidden(true)
     }
     
     // Better button text based on selection state

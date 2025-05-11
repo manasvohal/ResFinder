@@ -49,6 +49,16 @@ class OpenRouterService {
         \(userName)
         """
         
+        sendRequest(prompt: prompt, completion: completion)
+    }
+    
+    /// Generates a follow-up email via OpenRouter
+    func generateFollowUpEmail(prompt: String, completion: @escaping (Result<String, Error>) -> Void) {
+        sendRequest(prompt: prompt, completion: completion)
+    }
+    
+    // Helper method to send request to OpenRouter API
+    private func sendRequest(prompt: String, completion: @escaping (Result<String, Error>) -> Void) {
         // 1) Build chat payload
         let messages: [[String:String]] = [
             ["role":"system","content":"You are a professional email writer who creates concise, effective emails."],

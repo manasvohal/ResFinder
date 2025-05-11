@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct LandingView: View {
-    @State private var isActive = false
-    @AppStorage("hasUploadedResume") private var hasUploadedResume = false
+    @State private var showAuthFlow = false
+    @EnvironmentObject var authViewModel: AuthViewModel
 
     var body: some View {
         NavigationView {
@@ -23,8 +23,8 @@ struct LandingView: View {
                     Image("rf_logo")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: 265, height: 265)               // ↑ increased size
-                        .shadow(color: Color.black.opacity(0.3),      // ↑ added drop shadow
+                        .frame(width: 265, height: 265)
+                        .shadow(color: Color.black.opacity(0.3),
                                 radius: 12,
                                 x: 0,
                                 y: 6)
@@ -43,7 +43,7 @@ struct LandingView: View {
                     // Get Started button
                     Button(action: {
                         withAnimation {
-                            isActive = true
+                            showAuthFlow = true
                         }
                     }) {
                         Text("Get Started")
@@ -59,22 +59,26 @@ struct LandingView: View {
                     Spacer()
                 }
                 .padding()
-
-                // Hidden NavigationLink
-                NavigationLink(
-                    destination: ResumeUploadView(
-                        destinationView: AnyView(
-                            ContentView()
-                                .navigationBarBackButtonHidden(true)
-                        )
-                    ),
-                    isActive: $isActive
-                ) {
-                    EmptyView()
-                }
-                .hidden()
             }
             .navigationBarHidden(true)
+            .fullScreenCover(isPresented: $showAuthFlow) {
+                // Show the authentication flow when the user presses "Get Started"
+                AuthContainerView()
+                    .environmentObject(authViewModel)
+            }
         }
+        .navigationViewStyle(StackNavigationViewStyle())
+        // If user is already authenticated, skip directly to ContentView
+        .onAppear {
+            if authViewModel.isAuthenticated && hasUploadedResume {
+                // User is already logged in and has a resume, so redirect to ContentView
+                showAuthFlow = true
+            }
+        }
+    }
+    
+    // Check if user has uploaded a resume
+    private var hasUploadedResume: Bool {
+        return UserDefaults.standard.bool(forKey: "hasUploadedResume")
     }
 }

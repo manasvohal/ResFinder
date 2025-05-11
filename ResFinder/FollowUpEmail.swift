@@ -1,30 +1,33 @@
 import SwiftUI
 
-struct ComposeEmailView: View {
-    let prof: Professor
+struct FollowUpEmailView: View {
+    let outreachRecord: OutreachRecord
     
+    @StateObject private var outreachViewModel = OutreachViewModel()
     @State private var recipient = ""
     @State private var subject = ""
     @State private var bodyText = ""
     @State private var isGenerating = false
     @State private var generationError: String?
     @State private var showingMailAlert = false
-    @State private var showingLoginAlert = false
     @State private var showingSuccessAlert = false
-    @State private var showSignUp = true // Default to show sign up
-    @AppStorage("hasUploadedResume") private var hasUploadedResume = false
-    @AppStorage("userName") private var userName = ""
-    @EnvironmentObject var authViewModel: AuthViewModel
-    @StateObject private var outreachViewModel = OutreachViewModel()
     @Environment(\.presentationMode) var presentationMode
+    @EnvironmentObject var authViewModel: AuthViewModel
     
     var body: some View {
         VStack(spacing: 0) {
             // Use common navigation header
-            CommonNavigationHeader(title: "Email \(prof.name)")
+            CommonNavigationHeader(title: "Follow-up: \(outreachRecord.professorName)")
                 .environmentObject(authViewModel)
             
             Form {
+                Section(header: Text("Original Email").foregroundColor(.red)) {
+                    Text(outreachRecord.emailSent)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .padding(.vertical, 4)
+                }
+                
                 Section(header: Text("To").foregroundColor(.red)) {
                     TextField("prof@example.edu", text: $recipient)
                         .keyboardType(.emailAddress)
@@ -36,14 +39,14 @@ struct ComposeEmailView: View {
                     TextField("", text: $subject)
                 }
                 
-                Section(header: Text("Body").foregroundColor(.red)) {
+                Section(header: Text("Follow-up Email").foregroundColor(.red)) {
                     if isGenerating {
                         HStack {
                             Spacer()
                             VStack {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle(tint: .red))
-                                Text("Generating personalized email...")
+                                Text("Generating follow-up email...")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                                     .padding(.top, 4)
@@ -61,26 +64,15 @@ struct ComposeEmailView: View {
                             .foregroundColor(.red)
                             .font(.caption)
                     }
-                    
-                    if !hasUploadedResume {
-                        HStack {
-                            Image(systemName: "info.circle")
-                                .foregroundColor(.orange)
-                            Text("Resume data unavailable. Your email may not be fully personalized.")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        .padding(.top, 4)
-                    }
                 }
                 
                 Section {
                     Button(action: {
-                        generateTemplate()
+                        generateFollowUpTemplate()
                     }) {
                         HStack {
                             Spacer()
-                            Text(hasUploadedResume ? "Generate Personalized Email" : "Generate Template")
+                            Text("Generate Follow-up Email")
                                 .foregroundColor(.white)
                             Spacer()
                         }
@@ -100,7 +92,7 @@ struct ComposeEmailView: View {
                     }) {
                         HStack {
                             Spacer()
-                            Text("Send Email")
+                            Text("Send Follow-up Email")
                                 .foregroundColor(.white)
                             Spacer()
                         }
@@ -110,37 +102,31 @@ struct ComposeEmailView: View {
                     }
                     .disabled(recipient.isEmpty || subject.isEmpty || bodyText.isEmpty)
                     .listRowBackground(Color.clear)
+                    .alert(isPresented: $showingMailAlert) {
+                        Alert(
+                            title: Text("Invalid Email"),
+                            message: Text("Please enter a valid email address."),
+                            dismissButton: .default(Text("OK"))
+                        )
+                    }
                 }
             }
         }
         .onAppear {
-            // Pre-populate subject with research areas
-            subject = "Inquiry about your research in \(prof.researchAreas.joined(separator: ", "))"
+            // Pre-populate subject with "Follow-up"
+            subject = "Follow-up: Research Inquiry"
             
-            // Pre-populate recipient if available in the professor data
-            if let email = prof.profileUrl.absoluteString.components(separatedBy: "mailto:").last,
-               isValidEmail(email) {
-                recipient = email
-            }
-        }
-        .alert(isPresented: $showingMailAlert) {
-            Alert(
-                title: Text("Invalid Email"),
-                message: Text("Please enter a valid email address."),
-                dismissButton: .default(Text("OK"))
-            )
-        }
-        .sheet(isPresented: $showingLoginAlert) {
-            NavigationView {
-                // Fix: Pass the required showSignUp binding parameter
-                LoginView(showSignUp: $showSignUp)
-                    .environmentObject(authViewModel)
+            // Extract email from the professor name if possible
+            // This is a simplified approach - in a real app you might want to store the email address in the OutreachRecord
+            let possibleEmail = outreachRecord.professorName.lowercased().filter { $0 != " " } + "@university.edu"
+            if isValidEmail(possibleEmail) {
+                recipient = possibleEmail
             }
         }
         .alert(isPresented: $showingSuccessAlert) {
             Alert(
-                title: Text("Email Sent"),
-                message: Text("Your email has been sent and will be tracked in your profile."),
+                title: Text("Follow-up Recorded"),
+                message: Text("Your follow-up email has been sent and recorded."),
                 dismissButton: .default(Text("OK")) {
                     presentationMode.wrappedValue.dismiss()
                 }
@@ -149,19 +135,35 @@ struct ComposeEmailView: View {
         .navigationBarHidden(true)
     }
     
-    // MARK: - Helper Methods
-    
     private func isValidEmail(_ email: String) -> Bool {
         let emailRegEx = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
         let emailPred = NSPredicate(format:"SELF MATCHES %@", emailRegEx)
         return emailPred.evaluate(with: email)
     }
     
-    private func generateTemplate() {
+    private func generateFollowUpTemplate() {
         isGenerating = true
         generationError = nil
         
-        OpenRouterService.shared.generateEmailBody(for: prof.researchAreas) { result in
+        // Create prompt for follow-up email
+        let followUpPrompt = """
+        Generate a follow-up email for a professor I contacted about research opportunities.
+        
+        ORIGINAL EMAIL I SENT:
+        \(outreachRecord.emailSent)
+        
+        DAYS SINCE SENT: \(outreachRecord.daysSinceContact)
+        
+        Guidelines:
+        - Keep it brief and polite
+        - Remind the professor of my initial email
+        - Express continued interest
+        - Ask if they've had a chance to review my email
+        - Offer to provide additional information if needed
+        - Thank them for their time
+        """
+        
+        OpenRouterService.shared.generateFollowUpEmail(prompt: followUpPrompt) { result in
             DispatchQueue.main.async {
                 isGenerating = false
                 switch result {
@@ -175,12 +177,6 @@ struct ComposeEmailView: View {
     }
     
     private func sendEmail() {
-        // Ensure user is authenticated
-        guard authViewModel.isAuthenticated else {
-            showingLoginAlert = true
-            return
-        }
-        
         let to = recipient.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         let subj = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         let body = bodyText.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
@@ -189,34 +185,14 @@ struct ComposeEmailView: View {
         if let url = URL(string: urlString) {
             UIApplication.shared.open(url) { success in
                 if success {
-                    // Track outreach in Firebase
-                    outreachViewModel.saveOutreachRecord(for: prof, emailSent: bodyText)
+                    // Save the follow-up email to Firebase
+                    outreachViewModel.saveFollowUpEmail(for: outreachRecord, followUpEmail: bodyText)
                     showingSuccessAlert = true
                 } else {
                     // Handle case where Mail app isn't available
                     generationError = "Failed to open Mail app"
                 }
             }
-        }
-    }
-}
-
-// MARK: - Preview
-struct ComposeEmailView_Previews: PreviewProvider {
-    static var previews: some View {
-        // Create a mock professor for the preview
-        let mockProfessor = Professor(
-            _id: "123",
-            name: "Dr. Jane Smith",
-            university: "UMD",
-            department: "Computer Science",
-            profileUrl: URL(string: "https://example.com")!,
-            researchAreas: ["Machine Learning", "Artificial Intelligence"]
-        )
-        
-        NavigationView {
-            ComposeEmailView(prof: mockProfessor)
-                .environmentObject(AuthViewModel())
         }
     }
 }
