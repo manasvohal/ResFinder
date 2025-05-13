@@ -3,10 +3,10 @@ import SwiftUI
 struct EnhancedOutreachRecordRow: View {
     let record: OutreachRecord
     let followUpThresholdDays: Int
-    
+
     @State private var isExpanded = false
     @State private var navigateToFollowUp = false
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Professor info and days counter
@@ -15,21 +15,22 @@ struct EnhancedOutreachRecordRow: View {
                     Text(record.professorName)
                         .font(.headline)
                         .fontWeight(.semibold)
-                    
+
                     Text(formatDate(record.dateEmailed))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-                
+
                 Spacer()
-                
+
                 // Days counter with prominent display
                 VStack(alignment: .center, spacing: 0) {
                     Text("\(record.daysSinceContact)")
                         .font(.system(size: 24, weight: .bold))
                         .foregroundColor(getDayCountColor(days: record.daysSinceContact))
-                    
-                    Text("days")
+
+                    // singular vs. plural
+                    Text(record.daysSinceContact == 1 ? "day" : "days")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
@@ -38,7 +39,7 @@ struct EnhancedOutreachRecordRow: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            
+
             // Preview of email with expand/collapse
             VStack(alignment: .leading, spacing: 8) {
                 Text(isExpanded ? record.emailSent : record.emailSent.prefix(100) + "...")
@@ -46,11 +47,9 @@ struct EnhancedOutreachRecordRow: View {
                     .foregroundColor(.secondary)
                     .lineLimit(isExpanded ? nil : 2)
                     .padding(.horizontal, 16)
-                
+
                 Button(action: {
-                    withAnimation {
-                        isExpanded.toggle()
-                    }
+                    withAnimation { isExpanded.toggle() }
                 }) {
                     Text(isExpanded ? "Show less" : "Show more")
                         .font(.caption)
@@ -59,19 +58,17 @@ struct EnhancedOutreachRecordRow: View {
                 }
             }
             .padding(.bottom, 12)
-            
-            // Follow-up section
+
+            // Follow‑up section
             if record.hasFollowedUp {
-                // Show follow-up information
                 VStack(alignment: .leading, spacing: 6) {
-                    Divider()
-                        .padding(.horizontal, 16)
-                    
+                    Divider().padding(.horizontal, 16)
+
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundColor(.green)
                             .font(.system(size: 14))
-                        
+
                         Text("Follow-up sent on \(formatDate(record.followUpDate ?? Date()))")
                             .font(.caption)
                             .foregroundColor(.secondary)
@@ -80,15 +77,10 @@ struct EnhancedOutreachRecordRow: View {
                     .padding(.vertical, 8)
                 }
             } else {
-                // Show follow-up button immediately (0 days threshold)
                 VStack(alignment: .leading, spacing: 6) {
-                    Divider()
-                        .padding(.horizontal, 16)
-                    
-                    Button(action: {
-                        // Trigger navigation
-                        navigateToFollowUp = true
-                    }) {
+                    Divider().padding(.horizontal, 16)
+
+                    Button(action: { navigateToFollowUp = true }) {
                         HStack {
                             Image(systemName: "envelope.badge.clock.fill")
                                 .font(.system(size: 14))
@@ -113,23 +105,21 @@ struct EnhancedOutreachRecordRow: View {
                 .shadow(color: Color.black.opacity(0.07), radius: 8, x: 0, y: 2)
         )
         .background(
-            // Better navigation implementation
+            // Navigation to follow‑up
             NavigationLink(
                 destination: FollowUpEmailView(outreachRecord: record),
                 isActive: $navigateToFollowUp
-            ) {
-                EmptyView()
-            }
+            ) { EmptyView() }
             .hidden()
         )
     }
-    
+
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         return formatter.string(from: date)
     }
-    
+
     private func getDayCountColor(days: Int) -> Color {
         if days >= followUpThresholdDays {
             return .orange
@@ -140,3 +130,4 @@ struct EnhancedOutreachRecordRow: View {
         }
     }
 }
+

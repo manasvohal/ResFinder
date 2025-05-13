@@ -39,6 +39,8 @@
 		E90694542DC92C4800324117 /* OpenRouterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90694532DC92C4800324117 /* OpenRouterService.swift */; };
 		E90694562DC92EEF00324117 /* ResearchAreasSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90694552DC92EEF00324117 /* ResearchAreasSelectionView.swift */; };
 		E90694582DC9ADB000324117 /* LandingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90694572DC9ADB000324117 /* LandingView.swift */; };
+		E973D4A42DD3C8AC00300E7A /* RecommendationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E973D4A32DD3C88C00300E7A /* RecommendationViewModel.swift */; };
+		E973D4A62DD3C8C800300E7A /* RecommendationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E973D4A52DD3C8C600300E7A /* RecommendationView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -91,6 +93,8 @@
 		E90694532DC92C4800324117 /* OpenRouterService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenRouterService.swift; sourceTree = "<group>"; };
 		E90694552DC92EEF00324117 /* ResearchAreasSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResearchAreasSelectionView.swift; sourceTree = "<group>"; };
 		E90694572DC9ADB000324117 /* LandingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandingView.swift; sourceTree = "<group>"; };
+		E973D4A32DD3C88C00300E7A /* RecommendationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendationViewModel.swift; sourceTree = "<group>"; };
+		E973D4A52DD3C8C600300E7A /* RecommendationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendationView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -146,6 +150,8 @@
 				E906942E2DC866C400324117 /* Info.plist */,
 				369618542DD01744004986F4 /* GoogleService-Info.plist */,
 				3696185D2DD0186D004986F4 /* AppDelegate.swift */,
+				E973D4A32DD3C88C00300E7A /* RecommendationViewModel.swift */,
+				E973D4A52DD3C8C600300E7A /* RecommendationView.swift */,
 				3696185F2DD018E5004986F4 /* FirebaseService.swift */,
 				3696186D2DD02196004986F4 /* CommonNavigationHeader.swift */,
 				3696186F2DD024A9004986F4 /* ProfileButton.swift */,
@@ -348,6 +354,8 @@
 				369618662DD0195D004986F4 /* OutreachViewModel.swift in Sources */,
 				369618742DD13B90004986F4 /* ComposeEmailView.swift in Sources */,
 				E90694322DC8676100324117 /* Professor.swift in Sources */,
+				E973D4A42DD3C8AC00300E7A /* RecommendationViewModel.swift in Sources */,
+				E973D4A62DD3C8C800300E7A /* RecommendationView.swift in Sources */,
 				3696186A2DD019AB004986F4 /* FollowUpEmail.swift in Sources */,
 				E90694562DC92EEF00324117 /* ResearchAreasSelectionView.swift in Sources */,
 				369618532DCEADC7004986F4 /* ResumeUploadView.swift in Sources */,
@@ -523,7 +531,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ResFinder/Preview Content\"";
-				DEVELOPMENT_TEAM = UX582669PA;
+				DEVELOPMENT_TEAM = 767Z953J7F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ResFinder/Info.plist;
@@ -538,7 +546,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				"OTHER_SWIFT_FLAGS[arch=*]" = "-enable-experimental-feature AccessLevelOnImport";
-				PRODUCT_BUNDLE_IDENTIFIER = com.emailrun2.ResFinder;
+				PRODUCT_BUNDLE_IDENTIFIER = com.emailrun3.ResFinder;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -554,7 +562,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ResFinder/Preview Content\"";
-				DEVELOPMENT_TEAM = UX582669PA;
+				DEVELOPMENT_TEAM = 767Z953J7F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ResFinder/Info.plist;
@@ -569,7 +577,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				"OTHER_SWIFT_FLAGS[arch=*]" = "-enable-experimental-feature AccessLevelOnImport";
-				PRODUCT_BUNDLE_IDENTIFIER = com.emailrun2.ResFinder;
+				PRODUCT_BUNDLE_IDENTIFIER = com.emailrun3.ResFinder;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

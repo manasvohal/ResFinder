@@ -6,12 +6,12 @@ struct ContentView: View {
         ("UMD", "umd_logo", "University of Maryland"),
         ("Rutgers", "rutgers_logo", "Rutgers University")
     ]
-    
+
     @State private var showResumeUpload = false
     @AppStorage("hasUploadedResume") private var hasUploadedResume = false
     @AppStorage("userName") private var userName = ""
     @EnvironmentObject var authViewModel: AuthViewModel
-    
+
     var body: some View {
         VStack(spacing: 0) {
             // Title with red background and profile button
@@ -20,28 +20,28 @@ struct ContentView: View {
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
-                
+
                 Spacer()
-                
+
                 // Profile button
                 ProfileButton()
             }
             .padding(.horizontal)
             .padding(.vertical, 16)
             .background(Color.red)
-            
+
             // Resume info bar
             if hasUploadedResume {
                 HStack {
                     Image(systemName: "doc.fill")
                         .foregroundColor(.red)
-                    
+
                     Text("Resume uploaded for \(userName)")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
-                    
+
                     Spacer()
-                    
+
                     Button(action: {
                         showResumeUpload = true
                     }) {
@@ -57,15 +57,21 @@ struct ContentView: View {
                 .padding()
                 .background(Color.gray.opacity(0.1))
             }
-            
+
             // School list
             ScrollView {
                 VStack(spacing: 16) {
                     ForEach(schools, id: \.name) { school in
-                        NavigationLink(destination: ResearchAreasSelectionView(school: school.name).environmentObject(authViewModel)) {
-                            SchoolCardView(name: school.name,
-                                          logoName: school.imageName,
-                                          description: school.description)
+                        NavigationLink(
+                            destination:
+                                RecommendationView(school: school.name)
+                                    .environmentObject(authViewModel)
+                        ) {
+                            SchoolCardView(
+                                name: school.name,
+                                logoName: school.imageName,
+                                description: school.description
+                            )
                         }
                     }
                 }
@@ -84,15 +90,14 @@ struct ContentView: View {
     }
 }
 
-// Card View for Schools
+// MARK: - SchoolCardView
 struct SchoolCardView: View {
     let name: String
     let logoName: String
     let description: String
-    
+
     var body: some View {
         HStack(spacing: 16) {
-            // Logo with improved styling
             Image(logoName)
                 .resizable()
                 .scaledToFit()
@@ -104,22 +109,20 @@ struct SchoolCardView: View {
                         .stroke(Color.red.opacity(0.3), lineWidth: 2)
                 )
                 .padding(.leading, 4)
-            
-            // School information
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(name)
                     .font(.headline)
                     .fontWeight(.semibold)
                     .foregroundColor(.primary)
-                
+
                 Text(description)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
-            
+
             Spacer()
-            
-            // Chevron indicator
+
             Image(systemName: "chevron.right")
                 .foregroundColor(.red)
                 .padding(.trailing, 8)
@@ -133,3 +136,4 @@ struct SchoolCardView: View {
         )
     }
 }
+

@@ -32,7 +32,7 @@ struct LandingView: View {
                                 y: 6)
 
                     // App title with SF font
-                    Text("ResFinder")
+                    Text("ReachSearch")
                         .font(.system(size: 42, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
 
