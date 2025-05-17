@@ -13,10 +13,10 @@ class OutreachViewModel: ObservableObject {
         FirebaseService.shared.getOutreachRecords { [weak self] result in
             DispatchQueue.main.async {
                 self?.isLoading = false
-                
                 switch result {
                 case .success(let records):
                     self?.outreachRecords = records
+                    print("▶️ Loaded outreach IDs:", records.map { $0.id })
                 case .failure(let error):
                     self?.errorMessage = error.localizedDescription
                 }
@@ -27,9 +27,6 @@ class OutreachViewModel: ObservableObject {
     func saveOutreachRecord(for professor: Professor, emailSent: String) {
         isLoading = true
         errorMessage = nil
-        
-        // Print statement for debugging
-        print("Saving outreach with professor URL: \(professor.profileUrl)")
         
         FirebaseService.shared.saveOutreachRecord(
             professorId: professor.id,
@@ -42,9 +39,15 @@ class OutreachViewModel: ObservableObject {
                 self?.isLoading = false
                 
                 switch result {
-                case .success:
-                    // Reload the records to include the new one
+                case .success(let docId):
+                    // reload UI
                     self?.loadOutreachRecords()
+                    // schedule a follow-up notification in 7 days
+                    NotificationManager.shared.scheduleFollowUp(
+                        for: docId,
+                        professorName: professor.name,
+                        days: 7
+                    )
                 case .failure(let error):
                     self?.errorMessage = error.localizedDescription
                 }
@@ -62,10 +65,8 @@ class OutreachViewModel: ObservableObject {
         ) { [weak self] result in
             DispatchQueue.main.async {
                 self?.isLoading = false
-                
                 switch result {
                 case .success:
-                    // Reload the records to reflect the update
                     self?.loadOutreachRecords()
                 case .failure(let error):
                     self?.errorMessage = error.localizedDescription
@@ -74,19 +75,13 @@ class OutreachViewModel: ObservableObject {
         }
     }
     
-    // Helper function to fetch a professor's details by ID
+    // Helper to fetch professor details by ID
     func fetchProfessorDetails(byId professorId: String, completion: @escaping (Professor?) -> Void) {
-        // Make an API call to fetch professor details
         APIClient.fetchProfessors { result in
             switch result {
-            case .success(let response):
-                // Find the professor with the matching ID
-                if let professor = response.professors.first(where: { $0.id == professorId }) {
-                    completion(professor)
-                } else {
-                    completion(nil)
-                }
-            case .failure(_):
+            case .success(let resp):
+                completion(resp.professors.first(where: { $0.id == professorId }))
+            case .failure:
                 completion(nil)
             }
         }

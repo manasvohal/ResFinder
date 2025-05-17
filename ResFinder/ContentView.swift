@@ -12,6 +12,18 @@ struct ContentView: View {
     @AppStorage("userName") private var userName = ""
     @EnvironmentObject var authViewModel: AuthViewModel
 
+    /// Display name to show in the resume bar: prefer saved `userName`, fallback to email prefix
+    private var displayName: String {
+        if !userName.isEmpty {
+            return userName
+        }
+        // Fallback: use email prefix (before '@')
+        if let email = authViewModel.user?.email {
+            return String(email.split(separator: "@")[0])
+        }
+        return ""
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             // Title with red background and profile button
@@ -36,7 +48,7 @@ struct ContentView: View {
                     Image(systemName: "doc.fill")
                         .foregroundColor(.red)
 
-                    Text("Resume uploaded for \(userName)")
+                    Text("Resume uploaded for \(displayName)")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
 
@@ -78,7 +90,7 @@ struct ContentView: View {
                 .padding(.top, 20)
                 .padding(.horizontal)
             }
-            .background(Color(.systemGroupedBackground))
+            .background(Color(.systemGroupedBackground).ignoresSafeArea())
         }
         .navigationBarTitle("Pick School", displayMode: .inline)
         .navigationBarBackButtonHidden(true)
@@ -136,4 +148,3 @@ struct SchoolCardView: View {
         )
     }
 }
-
