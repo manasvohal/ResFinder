@@ -1,299 +1,387 @@
 import SwiftUI
 
-import SwiftUI
-
 struct AuthContainerView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @State private var showingLogin = true
     @State private var showResumeUpload = false
     @State private var showSchoolSelection = false
-
+    @Environment(\.presentationMode) var presentationMode
+    
     var body: some View {
-        ZStack {
-            Color.white.ignoresSafeArea()
-
-            VStack(spacing: 0) {
-                // Header
-                HStack {
-                    Text(showingLogin ? "Sign In" : "Create Account")
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
-                    Spacer()
+        NavigationView {
+            ZStack {
+                AppTheme.Colors.background
+                    .ignoresSafeArea()
+                
+                VStack(spacing: 0) {
+                    // Header
+                    HStack {
+                        Button(action: {
+                            presentationMode.wrappedValue.dismiss()
+                        }) {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundColor(AppTheme.Colors.primaryText)
+                                .frame(width: 44, height: 44)
+                                .background(AppTheme.Colors.buttonSecondary)
+                                .clipShape(Circle())
+                        }
+                        
+                        Spacer()
+                        
+                        Text(showingLogin ? "Sign In" : "Create Account")
+                            .font(AppTheme.Typography.title2)
+                            .foregroundColor(AppTheme.Colors.primaryText)
+                        
+                        Spacer()
+                        
+                        // Invisible placeholder for balance
+                        Color.clear
+                            .frame(width: 44, height: 44)
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.small)
+                    .padding(.vertical, AppTheme.Spacing.small)
+                    
+                    if showingLogin {
+                        LoginView(showSignUp: $showingLogin)
+                            .environmentObject(authViewModel)
+                    } else {
+                        SignUpView(showSignIn: $showingLogin)
+                            .environmentObject(authViewModel)
+                    }
                 }
-                .padding()
-                .background(Color.black)
-
-                // Form
-                if showingLogin {
-                    LoginView(showSignUp: $showingLogin)
-                        .environmentObject(authViewModel)
-                } else {
-                    SignUpView(showLogin: $showingLogin)
-                        .environmentObject(authViewModel)
-                }
-
-                Spacer()
             }
-        }
-        .fullScreenCover(isPresented: $showResumeUpload) {
-            ResumeUploadView(
-                isSheet: false,
-                onComplete: {
-                    showResumeUpload = false
-                    showSchoolSelection = true
+            .navigationBarHidden(true)
+            .preferredColorScheme(.dark)
+            .onReceive(authViewModel.$isAuthenticated) { isAuthenticated in
+                if isAuthenticated {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        showResumeUpload = true
+                    }
                 }
-            )
-            .environmentObject(authViewModel)
-        }
-        .fullScreenCover(isPresented: $showSchoolSelection) {
-            NavigationView {
-                ContentView()
-                    .navigationBarBackButtonHidden(true)
-                    .environmentObject(authViewModel)
             }
-        }
-        .onReceive(authViewModel.$isAuthenticated) { isAuth in
-            if isAuth {
-                showResumeUpload = true
+            .fullScreenCover(isPresented: $showResumeUpload) {
+                ResumeUploadView(
+                    isSheet: false,
+                    onComplete: {
+                        showResumeUpload = false
+                        showSchoolSelection = true
+                    }
+                )
+                .environmentObject(authViewModel)
+            }
+            .fullScreenCover(isPresented: $showSchoolSelection) {
+                NavigationView {
+                    ContentView()
+                        .navigationBarBackButtonHidden(true)
+                        .environmentObject(authViewModel)
+                }
             }
         }
     }
 }
 
-// MARK: - Styled Login
 struct LoginView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
-    @Binding var showSignUp: Bool
     @State private var email = ""
     @State private var password = ""
-    @State private var errorMessage: String?
-    @FocusState private var focusedField: Field?
-
-    enum Field { case email, password }
-
+    @Binding var showSignUp: Bool
+    
     var body: some View {
-        VStack(spacing: 32) {
-            VStack(spacing: 16) {
-                // Email field
-                HStack {
-                    Image(systemName: "envelope")
-                        .foregroundColor(focusedField == .email ? .black : .black.opacity(0.6))
-                    TextField("Email", text: $email)
-                        .foregroundColor(.black)
-                        .keyboardType(.emailAddress)
-                        .autocapitalization(.none)
-                        .focused($focusedField, equals: .email)
+        ScrollView {
+            VStack(spacing: AppTheme.Spacing.large) {
+                // Logo or illustration
+                Image(systemName: "person.circle.fill")
+                    .font(.system(size: 80))
+                    .foregroundColor(AppTheme.Colors.accent)
+                    .padding(.top, AppTheme.Spacing.xxLarge)
+                    .padding(.bottom, AppTheme.Spacing.large)
+                
+                // Form fields
+                VStack(spacing: AppTheme.Spacing.small) {
+                    // Email field
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.xxSmall) {
+                        Text("Email")
+                            .font(AppTheme.Typography.caption)
+                            .foregroundColor(AppTheme.Colors.secondaryText)
+                        
+                        TextField("", text: $email)
+                            .placeholder(when: email.isEmpty) {
+                                Text("Enter your email")
+                                    .foregroundColor(AppTheme.Colors.secondaryText.opacity(0.5))
+                            }
+                            .foregroundColor(AppTheme.Colors.primaryText)
+                            .keyboardType(.emailAddress)
+                            .autocapitalization(.none)
+                            .disableAutocorrection(true)
+                            .padding()
+                            .background(AppTheme.Colors.buttonSecondary)
+                            .cornerRadius(AppTheme.CornerRadius.medium)
+                    }
+                    
+                    // Password field
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.xxSmall) {
+                        Text("Password")
+                            .font(AppTheme.Typography.caption)
+                            .foregroundColor(AppTheme.Colors.secondaryText)
+                        
+                        SecureField("", text: $password)
+                            .placeholder(when: password.isEmpty) {
+                                Text("Enter your password")
+                                    .foregroundColor(AppTheme.Colors.secondaryText.opacity(0.5))
+                            }
+                            .foregroundColor(AppTheme.Colors.primaryText)
+                            .padding()
+                            .background(AppTheme.Colors.buttonSecondary)
+                            .cornerRadius(AppTheme.CornerRadius.medium)
+                    }
+                    
+                    if let error = authViewModel.authError {
+                        Text(error)
+                            .font(AppTheme.Typography.caption)
+                            .foregroundColor(AppTheme.Colors.error)
+                            .multilineTextAlignment(.center)
+                            .padding(.top, AppTheme.Spacing.xxSmall)
+                    }
                 }
-                .padding(12)
-                .background(Color.black.opacity(0.05))
-                .cornerRadius(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(focusedField == .email ? Color.black : Color.black.opacity(0.2), lineWidth: 1)
-                )
-
-                // Password field
-                HStack {
-                    Image(systemName: "lock")
-                        .foregroundColor(focusedField == .password ? .black : .black.opacity(0.6))
-                    SecureField("Password", text: $password)
-                        .foregroundColor(.black)
-                        .focused($focusedField, equals: .password)
+                .padding(.horizontal)
+                
+                // Buttons
+                VStack(spacing: AppTheme.Spacing.small) {
+                    Button(action: {
+                        authViewModel.signIn(email: email, password: password)
+                    }) {
+                        HStack {
+                            Text("Sign In")
+                            
+                            if authViewModel.isLoading {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.Colors.background))
+                                    .scaleEffect(0.8)
+                                    .padding(.leading, AppTheme.Spacing.xxSmall)
+                            }
+                        }
+                        .primaryButton(isEnabled: !email.isEmpty && !password.isEmpty && !authViewModel.isLoading)
+                    }
+                    .disabled(email.isEmpty || password.isEmpty || authViewModel.isLoading)
+                    
+                    Button(action: {
+                        showSignUp = false
+                    }) {
+                        Text("Don't have an account? Sign Up")
+                            .font(AppTheme.Typography.subheadline)
+                            .foregroundColor(AppTheme.Colors.accent)
+                    }
+                    .padding(.top, AppTheme.Spacing.xxSmall)
                 }
-                .padding(12)
-                .background(Color.black.opacity(0.05))
-                .cornerRadius(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(focusedField == .password ? Color.black : Color.black.opacity(0.2), lineWidth: 1)
-                )
-
-                if let error = errorMessage {
-                    Text(error)
-                        .font(.caption)
-                        .foregroundColor(.red)
-                }
+                .padding(.horizontal)
+                .padding(.top, AppTheme.Spacing.medium)
+                
+                Spacer(minLength: AppTheme.Spacing.xxLarge)
             }
-            .padding(.horizontal, 32)
-
-            VStack(spacing: 16) {
-                Button(action: signIn) {
-                    Text("Sign In")
-                        .font(.system(size: 18, weight: .semibold, design: .rounded))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity, minHeight: 50)
-                        .background(Color.black)
-                        .cornerRadius(25)
-                }
-                .disabled(email.isEmpty || password.isEmpty)
-
-                Button(action: { showSignUp = false }) {
-                    Text("Don't have an account? Sign Up")
-                        .font(.system(size: 14, design: .rounded))
-                        .foregroundColor(.black.opacity(0.8))
-                }
-            }
-            .padding(.horizontal, 32)
         }
-        .padding(.top, 40)
-    }
-
-    private func signIn() {
-        authViewModel.signIn(email: email, password: password)
-        // Listen for errors
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            if let err = authViewModel.authError {
-                errorMessage = err
-            }
-        }
+        .background(AppTheme.Colors.background)
     }
 }
 
-// MARK: - Styled SignUp
 struct SignUpView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
-    @Binding var showLogin: Bool
     @State private var email = ""
     @State private var password = ""
     @State private var confirmPassword = ""
+    @State private var passwordMismatch = false
     @State private var name = ""
     @State private var major = ""
     @State private var year = ""
-    @State private var errorMessage: String?
-    @FocusState private var focusedField: Field?
-
-    enum Field { case email, password, confirm }
-    let yearOptions = ["Freshman","Sophomore","Junior","Senior","Graduate","PhD"]
-
+    @Binding var showSignIn: Bool
+    
+    let yearOptions = ["Freshman", "Sophomore", "Junior", "Senior", "Graduate Student", "PhD Student"]
+    
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
-                VStack(spacing: 16) {
-                    // Email
-                    HStack {
-                        Image(systemName: "envelope")
-                            .foregroundColor(focusedField == .email ? .black : .black.opacity(0.6))
-                        TextField("Email", text: $email)
-                            .foregroundColor(.black)
-                            .keyboardType(.emailAddress)
-                            .autocapitalization(.none)
-                            .focused($focusedField, equals: .email)
+            VStack(spacing: AppTheme.Spacing.large) {
+                // Form fields
+                VStack(spacing: AppTheme.Spacing.medium) {
+                    // Account Information Section
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.small) {
+                        Text("Account Information")
+                            .font(AppTheme.Typography.headline)
+                            .foregroundColor(AppTheme.Colors.accent)
+                        
+                        VStack(spacing: AppTheme.Spacing.small) {
+                            CustomTextField(title: "Email", text: $email, placeholder: "Enter your email", keyboardType: .emailAddress)
+                            CustomSecureField(title: "Password", text: $password, placeholder: "Create a password")
+                            CustomSecureField(title: "Confirm Password", text: $confirmPassword, placeholder: "Confirm your password")
+                        }
                     }
-                    .fieldStyle(focused: focusedField == .email)
-
-                    // Password
-                    HStack {
-                        Image(systemName: "lock")
-                            .foregroundColor(focusedField == .password ? .black : .black.opacity(0.6))
-                        SecureField("Password", text: $password)
-                            .foregroundColor(.black)
-                            .focused($focusedField, equals: .password)
+                    
+                    // Personal Information Section
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.small) {
+                        Text("Personal Information")
+                            .font(AppTheme.Typography.headline)
+                            .foregroundColor(AppTheme.Colors.accent)
+                        
+                        VStack(spacing: AppTheme.Spacing.small) {
+                            CustomTextField(title: "Full Name", text: $name, placeholder: "Enter your name")
+                            CustomTextField(title: "Major", text: $major, placeholder: "e.g., Computer Science")
+                            
+                            VStack(alignment: .leading, spacing: AppTheme.Spacing.xxSmall) {
+                                Text("Academic Year")
+                                    .font(AppTheme.Typography.caption)
+                                    .foregroundColor(AppTheme.Colors.secondaryText)
+                                
+                                Menu {
+                                    ForEach(yearOptions, id: \.self) { yearOption in
+                                        Button(yearOption) {
+                                            year = yearOption
+                                        }
+                                    }
+                                } label: {
+                                    HStack {
+                                        Text(year.isEmpty ? "Select Year" : year)
+                                            .foregroundColor(year.isEmpty ? AppTheme.Colors.secondaryText.opacity(0.5) : AppTheme.Colors.primaryText)
+                                        Spacer()
+                                        Image(systemName: "chevron.down")
+                                            .foregroundColor(AppTheme.Colors.secondaryText)
+                                    }
+                                    .padding()
+                                    .background(AppTheme.Colors.buttonSecondary)
+                                    .cornerRadius(AppTheme.CornerRadius.medium)
+                                }
+                            }
+                        }
                     }
-                    .fieldStyle(focused: focusedField == .password)
-
-                    // Confirm
-                    HStack {
-                        Image(systemName: "lock.rotation")
-                            .foregroundColor(focusedField == .confirm ? .black : .black.opacity(0.6))
-                        SecureField("Confirm Password", text: $confirmPassword)
-                            .foregroundColor(.black)
-                            .focused($focusedField, equals: .confirm)
-                    }
-                    .fieldStyle(focused: focusedField == .confirm)
-
-                    // Name
-                    TextField("Full Name", text: $name)
-                        .padding(12)
-                        .background(Color.black.opacity(0.05))
-                        .cornerRadius(12)
-                        .foregroundColor(.black)
-
-                    // Major
-                    TextField("Major", text: $major)
-                        .padding(12)
-                        .background(Color.black.opacity(0.05))
-                        .cornerRadius(12)
-                        .foregroundColor(.black)
-
-                    // Year
-                    Picker("Year", selection: $year) {
-                        ForEach(yearOptions, id: \ .self) { Text($0) }
-                    }
-                    .padding(12)
-                    .background(Color.black.opacity(0.05))
-                    .cornerRadius(12)
-
-                    // Validation
-                    if !passwordsMatch {
+                    
+                    if passwordMismatch {
                         Text("Passwords do not match")
-                            .font(.caption)
-                            .foregroundColor(.red)
+                            .font(AppTheme.Typography.caption)
+                            .foregroundColor(AppTheme.Colors.error)
                     }
-                    if let err = errorMessage {
-                        Text(err)
-                            .font(.caption)
-                            .foregroundColor(.red)
+                    
+                    if let error = authViewModel.authError {
+                        Text(error)
+                            .font(AppTheme.Typography.caption)
+                            .foregroundColor(AppTheme.Colors.error)
+                            .multilineTextAlignment(.center)
                     }
                 }
-                .padding(.horizontal, 32)
-
-                VStack(spacing: 16) {
-                    Button(action: signUp) {
-                        Text("Sign Up")
-                            .font(.system(size: 18, weight: .semibold, design: .rounded))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity, minHeight: 50)
-                            .background(Color.black)
-                            .cornerRadius(25)
+                .padding(.horizontal)
+                
+                // Buttons
+                VStack(spacing: AppTheme.Spacing.small) {
+                    Button(action: {
+                        if password == confirmPassword {
+                            passwordMismatch = false
+                            UserDefaults.standard.set(name, forKey: "userName")
+                            UserDefaults.standard.set(major, forKey: "userMajor")
+                            UserDefaults.standard.set(year, forKey: "userYear")
+                            authViewModel.signUp(email: email, password: password)
+                        } else {
+                            passwordMismatch = true
+                        }
+                    }) {
+                        HStack {
+                            Text("Sign Up")
+                            
+                            if authViewModel.isLoading {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.Colors.background))
+                                    .scaleEffect(0.8)
+                                    .padding(.leading, AppTheme.Spacing.xxSmall)
+                            }
+                        }
+                        .primaryButton(isEnabled: !isFormIncomplete && !authViewModel.isLoading)
                     }
-                    .disabled(!formComplete)
-
-                    Button(action: { showLogin = true }) {
+                    .disabled(isFormIncomplete || authViewModel.isLoading)
+                    
+                    Button(action: {
+                        showSignIn = true
+                    }) {
                         Text("Already have an account? Sign In")
-                            .font(.system(size: 14, design: .rounded))
-                            .foregroundColor(.black.opacity(0.8))
+                            .font(AppTheme.Typography.subheadline)
+                            .foregroundColor(AppTheme.Colors.accent)
                     }
+                    .padding(.top, AppTheme.Spacing.xxSmall)
                 }
-                .padding(.horizontal, 32)
-
-                Spacer()
+                .padding(.horizontal)
+                .padding(.top, AppTheme.Spacing.medium)
+                
+                Spacer(minLength: AppTheme.Spacing.xxLarge)
             }
-            .padding(.top, 40)
+            .padding(.top, AppTheme.Spacing.medium)
         }
+        .background(AppTheme.Colors.background)
     }
-
-    // MARK: - Helpers
-    private var passwordsMatch: Bool { !password.isEmpty && password == confirmPassword }
-    private var formComplete: Bool {
-        !email.isEmpty && passwordsMatch && !name.isEmpty && !major.isEmpty && !year.isEmpty
+    
+    private var isFormIncomplete: Bool {
+        email.isEmpty || password.isEmpty || confirmPassword.isEmpty ||
+        name.isEmpty || major.isEmpty || year.isEmpty
     }
+}
 
-    private func signUp() {
-        guard passwordsMatch else { return }
-        // Store extras
-        UserDefaults.standard.set(name, forKey: "userName")
-        UserDefaults.standard.set(major, forKey: "userMajor")
-        UserDefaults.standard.set(year, forKey: "userYear")
-
-        authViewModel.signUp(email: email, password: password)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            if let err = authViewModel.authError {
-                errorMessage = err
-            }
+// MARK: - Custom Components
+struct CustomTextField: View {
+    let title: String
+    @Binding var text: String
+    let placeholder: String
+    var keyboardType: UIKeyboardType = .default
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.xxSmall) {
+            Text(title)
+                .font(AppTheme.Typography.caption)
+                .foregroundColor(AppTheme.Colors.secondaryText)
+            
+            TextField("", text: $text)
+                .placeholder(when: text.isEmpty) {
+                    Text(placeholder)
+                        .foregroundColor(AppTheme.Colors.secondaryText.opacity(0.5))
+                }
+                .foregroundColor(AppTheme.Colors.primaryText)
+                .keyboardType(keyboardType)
+                .autocapitalization(keyboardType == .emailAddress ? .none : .sentences)
+                .disableAutocorrection(keyboardType == .emailAddress)
+                .padding()
+                .background(AppTheme.Colors.buttonSecondary)
+                .cornerRadius(AppTheme.CornerRadius.medium)
         }
     }
 }
 
-// MARK: - Field Style Modifier
-fileprivate extension View {
-    func fieldStyle(focused: Bool) -> some View {
-        self
-            .padding(12)
-            .background(Color.black.opacity(0.05))
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(focused ? Color.black : Color.black.opacity(0.2), lineWidth: 1)
-            )
+struct CustomSecureField: View {
+    let title: String
+    @Binding var text: String
+    let placeholder: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.xxSmall) {
+            Text(title)
+                .font(AppTheme.Typography.caption)
+                .foregroundColor(AppTheme.Colors.secondaryText)
+            
+            SecureField("", text: $text)
+                .placeholder(when: text.isEmpty) {
+                    Text(placeholder)
+                        .foregroundColor(AppTheme.Colors.secondaryText.opacity(0.5))
+                }
+                .foregroundColor(AppTheme.Colors.primaryText)
+                .padding()
+                .background(AppTheme.Colors.buttonSecondary)
+                .cornerRadius(AppTheme.CornerRadius.medium)
+        }
     }
-} 
+}
+
+// MARK: - View Extension for Placeholder
+extension View {
+    func placeholder<Content: View>(
+        when shouldShow: Bool,
+        alignment: Alignment = .leading,
+        @ViewBuilder placeholder: () -> Content) -> some View {
+        
+        ZStack(alignment: alignment) {
+            placeholder().opacity(shouldShow ? 1 : 0)
+            self
+        }
+    }
+}

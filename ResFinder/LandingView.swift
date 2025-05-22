@@ -1,96 +1,86 @@
 import SwiftUI
 
 struct LandingView: View {
-    @EnvironmentObject var authViewModel: AuthViewModel
-    @AppStorage("hasUploadedResume") private var hasUploadedResume = false
     @State private var showAuthFlow = false
-    @State private var navigateNext = false
-
-    // Typing effect state
-    @State private var currentText = ""
-    private let fullText = "Find faculty aligned with you."
-    private let typingInterval = 0.05
+    @State private var isActive = false
+    @AppStorage("hasUploadedResume") private var hasUploadedResume = false
+    @EnvironmentObject var authViewModel: AuthViewModel
 
     var body: some View {
-        ZStack {
-            // White background
-            Color.white
-                .ignoresSafeArea()
+        NavigationView {
+            ZStack {
+                // Dark background
+                AppTheme.Colors.background
+                    .ignoresSafeArea()
 
-            VStack(spacing: 32) {
-                Spacer()
+                // Main Content
+                VStack(spacing: AppTheme.Spacing.xLarge) {
+                    Spacer()
 
-                // Logo
-                Image("rf_logo")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 200, height: 200)
-                    .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
+                    // Logo
+                    Image("rf_logo")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 200, height: 200)
+                        .background(
+                            Circle()
+                                .fill(AppTheme.Colors.cardBackground)
+                                .frame(width: 240, height: 240)
+                        )
 
-                // App title
-                Text("ReachSearch")
-                    .font(.system(size: 34, weight: .bold, design: .rounded))
-                    .foregroundColor(.black)
+                    // App title
+                    Text("ReachSearch")
+                        .font(AppTheme.Typography.largeTitle)
+                        .foregroundColor(AppTheme.Colors.primaryText)
 
-                // Typing effect
-                Text(currentText)
-                    .font(.system(size: 16, weight: .regular, design: .rounded))
-                    .foregroundColor(.black)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 24)
-                    .onAppear(perform: startTyping)
+                    // Tagline
+                    Text("Connect with professors in your field")
+                        .font(AppTheme.Typography.subheadline)
+                        .foregroundColor(AppTheme.Colors.secondaryText)
+                        .padding(.bottom, AppTheme.Spacing.small)
 
-                // Get Started button
-                Button(action: handleGetStarted) {
-                    Text("Get Started")
-                        .font(.system(size: 22, weight: .semibold, design: .rounded))
-                        .frame(maxWidth: .infinity, minHeight: 50)
-                        .background(Color.black)
-                        .foregroundColor(.white)
-                        .cornerRadius(25)
+                    // Get Started button
+                    Button(action: {
+                        withAnimation {
+                            if authViewModel.isAuthenticated && hasUploadedResume {
+                                isActive = true
+                            } else {
+                                showAuthFlow = true
+                            }
+                        }
+                    }) {
+                        Text("Get Started")
+                            .primaryButton()
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.xxLarge)
+
+                    Spacer()
                 }
-                .padding(.horizontal, 32)
-
-                Spacer()
+                .padding()
             }
+            .navigationBarHidden(true)
+            .preferredColorScheme(.dark)
+            .fullScreenCover(isPresented: $showAuthFlow) {
+                AuthContainerView()
+                    .environmentObject(authViewModel)
+            }
+            .background(
+                NavigationLink(
+                    destination: ContentView()
+                        .navigationBarBackButtonHidden(true)
+                        .environmentObject(authViewModel),
+                    isActive: $isActive
+                ) {
+                    EmptyView()
+                }
+            )
         }
-        // Auth / Next flows
-        .fullScreenCover(isPresented: $showAuthFlow) {
-            AuthContainerView()
-                .environmentObject(authViewModel)
-        }
-        .fullScreenCover(isPresented: $navigateNext) {
-            ContentView()
-                .environmentObject(authViewModel)
-        }
+        .navigationViewStyle(StackNavigationViewStyle())
         .onAppear {
-            // Auto‑advance if already signed in & resume uploaded
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 if authViewModel.isAuthenticated && hasUploadedResume {
-                    navigateNext = true
+                    isActive = true
                 }
-            }
-        }
-    }
-
-    private func handleGetStarted() {
-        if authViewModel.isAuthenticated && hasUploadedResume {
-            navigateNext = true
-        } else {
-            showAuthFlow = true
-        }
-    }
-
-    private func startTyping() {
-        currentText = ""
-        var idx = 0
-        Timer.scheduledTimer(withTimeInterval: typingInterval, repeats: true) { timer in
-            if idx < fullText.count {
-                let i = fullText.index(fullText.startIndex, offsetBy: idx)
-                currentText.append(fullText[i])
-                idx += 1
-            } else {
-                timer.invalidate()
             }
         }
     }

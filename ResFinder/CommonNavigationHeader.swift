@@ -20,63 +20,31 @@ struct CommonNavigationHeader: View {
                     }
                 }) {
                     Image(systemName: "chevron.left")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.white)
-                        .padding(8)
-                        .background(
-                            Circle()
-                                .fill(Color.white.opacity(0.2))
-                        )
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(AppTheme.Colors.primaryText)
+                        .frame(width: 44, height: 44)
+                        .background(AppTheme.Colors.buttonSecondary)
+                        .clipShape(Circle())
                 }
+            } else {
+                Color.clear
+                    .frame(width: 44, height: 44)
             }
             
+            Spacer()
+            
             Text(title)
-                .font(.title2)
-                .fontWeight(.bold)
-                .foregroundColor(.white)
+                .font(AppTheme.Typography.title2)
+                .foregroundColor(AppTheme.Colors.primaryText)
+                .lineLimit(1)
             
             Spacer()
             
             // Profile button
-            // Using existing ProfileButton instead of redeclaring it
             ProfileButton()
         }
-        .padding(.horizontal)
-        .padding(.vertical, 16)
-        .background(Color.red)
+        .padding(.horizontal, AppTheme.Spacing.small)
+        .padding(.vertical, AppTheme.Spacing.small)
+        .background(AppTheme.Colors.background)
     }
 }
-
-// Move this to a separate file called ProfileButton.swift to avoid redeclaration
-// struct ProfileButton: View {
-//     @State private var showingProfile = false
-//     @EnvironmentObject var authViewModel: AuthViewModel
-//
-//     var body: some View {
-//         Button(action: {
-//             showingProfile = true
-//         }) {
-//             ZStack {
-//                 Circle()
-//                     .fill(Color.white.opacity(0.2))
-//                     .frame(width: 36, height: 36)
-//
-//                 if authViewModel.isAuthenticated {
-//                     // Show authenticated icon
-//                     Image(systemName: "person.circle.fill")
-//                         .font(.system(size: 20))
-//                         .foregroundColor(.white)
-//                 } else {
-//                     // Show unauthenticated icon
-//                     Image(systemName: "person.circle")
-//                         .font(.system(size: 20))
-//                         .foregroundColor(.white)
-//                 }
-//             }
-//         }
-//         .sheet(isPresented: $showingProfile) {
-//             ProfileView()
-//                 .environmentObject(authViewModel)
-//         }
-//     }
-// }

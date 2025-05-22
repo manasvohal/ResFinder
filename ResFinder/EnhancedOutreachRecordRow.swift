@@ -11,14 +11,14 @@ struct EnhancedOutreachRecordRow: View {
         VStack(alignment: .leading, spacing: 0) {
             // Professor info and days counter
             HStack {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.xxxSmall) {
                     Text(record.professorName)
-                        .font(.headline)
-                        .fontWeight(.semibold)
+                        .font(AppTheme.Typography.headline)
+                        .foregroundColor(AppTheme.Colors.primaryText)
 
                     Text(formatDate(record.dateEmailed))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(AppTheme.Typography.caption)
+                        .foregroundColor(AppTheme.Colors.secondaryText)
                 }
 
                 Spacer()
@@ -29,83 +29,81 @@ struct EnhancedOutreachRecordRow: View {
                         .font(.system(size: 24, weight: .bold))
                         .foregroundColor(getDayCountColor(days: record.daysSinceContact))
 
-                    // singular vs. plural
                     Text(record.daysSinceContact == 1 ? "day" : "days")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
+                        .font(AppTheme.Typography.caption2)
+                        .foregroundColor(AppTheme.Colors.secondaryText)
                 }
                 .frame(width: 60)
-                .padding(.horizontal, 6)
+                .padding(.horizontal, AppTheme.Spacing.xxxSmall)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.horizontal, AppTheme.Spacing.small)
+            .padding(.vertical, AppTheme.Spacing.xSmall)
 
             // Preview of email with expand/collapse
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.xxSmall) {
                 Text(isExpanded ? record.emailSent : record.emailSent.prefix(100) + "...")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(AppTheme.Typography.subheadline)
+                    .foregroundColor(AppTheme.Colors.secondaryText)
                     .lineLimit(isExpanded ? nil : 2)
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, AppTheme.Spacing.small)
 
                 Button(action: {
                     withAnimation { isExpanded.toggle() }
                 }) {
                     Text(isExpanded ? "Show less" : "Show more")
-                        .font(.caption)
-                        .foregroundColor(.blue)
-                        .padding(.horizontal, 16)
+                        .font(AppTheme.Typography.caption)
+                        .foregroundColor(AppTheme.Colors.accent)
+                        .padding(.horizontal, AppTheme.Spacing.small)
                 }
             }
-            .padding(.bottom, 12)
+            .padding(.bottom, AppTheme.Spacing.xSmall)
 
             // Follow‑up section
             if record.hasFollowedUp {
-                VStack(alignment: .leading, spacing: 6) {
-                    Divider().padding(.horizontal, 16)
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.xxxSmall) {
+                    Divider()
+                        .background(AppTheme.Colors.divider)
+                        .padding(.horizontal, AppTheme.Spacing.small)
 
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
+                            .foregroundColor(AppTheme.Colors.success)
                             .font(.system(size: 14))
 
                         Text("Follow-up sent on \(formatDate(record.followUpDate ?? Date()))")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(AppTheme.Typography.caption)
+                            .foregroundColor(AppTheme.Colors.secondaryText)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, AppTheme.Spacing.small)
+                    .padding(.vertical, AppTheme.Spacing.xxSmall)
                 }
             } else {
-                VStack(alignment: .leading, spacing: 6) {
-                    Divider().padding(.horizontal, 16)
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.xxxSmall) {
+                    Divider()
+                        .background(AppTheme.Colors.divider)
+                        .padding(.horizontal, AppTheme.Spacing.small)
 
                     Button(action: { navigateToFollowUp = true }) {
                         HStack {
                             Image(systemName: "envelope.badge.clock.fill")
                                 .font(.system(size: 14))
                             Text("Send Follow-up Email")
-                                .font(.subheadline)
+                                .font(AppTheme.Typography.subheadline)
                                 .fontWeight(.medium)
                         }
-                        .foregroundColor(.white)
+                        .foregroundColor(AppTheme.Colors.primaryText)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
-                        .background(Color.orange)
-                        .cornerRadius(8)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
+                        .padding(.vertical, AppTheme.Spacing.xxSmall)
+                        .background(AppTheme.Colors.warning)
+                        .cornerRadius(AppTheme.CornerRadius.small)
+                        .padding(.horizontal, AppTheme.Spacing.small)
+                        .padding(.vertical, AppTheme.Spacing.xxSmall)
                     }
                 }
             }
         }
+        .darkCard()
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.systemBackground))
-                .shadow(color: Color.black.opacity(0.07), radius: 8, x: 0, y: 2)
-        )
-        .background(
-            // Navigation to follow‑up
             NavigationLink(
                 destination: FollowUpEmailView(outreachRecord: record),
                 isActive: $navigateToFollowUp
@@ -122,12 +120,11 @@ struct EnhancedOutreachRecordRow: View {
 
     private func getDayCountColor(days: Int) -> Color {
         if days >= followUpThresholdDays {
-            return .orange
+            return AppTheme.Colors.warning
         } else if days > 14 {
-            return .red
+            return AppTheme.Colors.accent
         } else {
-            return .blue
+            return AppTheme.Colors.accent
         }
     }
 }
-

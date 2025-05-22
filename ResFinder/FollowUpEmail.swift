@@ -16,15 +16,12 @@ struct FollowUpEmailView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var authViewModel: AuthViewModel
     
-    // Define the minimum days before showing the follow-up button
     private let minimumDaysForFollowUp = 7
     
-    // Computed property to check if enough days have passed
     private var canSendFollowUp: Bool {
         return outreachRecord.daysSinceContact >= minimumDaysForFollowUp
     }
     
-    // Extract professor's last name
     private var professorLastName: String {
         let components = outreachRecord.professorName.components(separatedBy: " ")
         if components.count > 1 {
@@ -33,260 +30,251 @@ struct FollowUpEmailView: View {
         return outreachRecord.professorName
     }
     
-    // Get the best available URL for the professor's website
     private var bestWebsiteUrl: URL {
-        // First priority: use URL from outreach record if available
         if let profileUrl = outreachRecord.profileUrl {
-            print("Using URL from outreach record: \(profileUrl)")
             return profileUrl
         }
         
-        // Second priority: use URL from fetched professor details if available
         if let professor = professorDetails, professor.id == outreachRecord.professorId {
-            print("Using URL from professor details: \(professor.profileUrl)")
             return professor.profileUrl
         }
         
-        // Fallback: use Google search
-        print("Falling back to Google search")
         return URL(string: "https://www.google.com/search?q=\(outreachRecord.professorName.replacingOccurrences(of: " ", with: "+"))") ?? URL(string: "https://www.google.com")!
     }
     
     var body: some View {
-        ScrollView {
+        ZStack {
+            AppTheme.Colors.background
+                .ignoresSafeArea()
+            
             VStack(spacing: 0) {
-                // Header with black background
+                // Header
                 HStack {
                     Button(action: {
                         presentationMode.wrappedValue.dismiss()
                     }) {
-                        HStack {
-                            Image(systemName: "chevron.left")
-                            Text("Back")
-                        }
-                        .foregroundColor(.white)
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(AppTheme.Colors.primaryText)
+                            .frame(width: 44, height: 44)
+                            .background(AppTheme.Colors.buttonSecondary)
+                            .clipShape(Circle())
                     }
                     
                     Spacer()
                     
                     Text("Follow-up Email")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
+                        .font(AppTheme.Typography.title2)
+                        .foregroundColor(AppTheme.Colors.primaryText)
                     
                     Spacer()
                     
-                    // Empty view to balance the header
-                    HStack {
-                        Image(systemName: "chevron.left")
-                        Text("Back")
-                    }
-                    .opacity(0) // Make it invisible but take up space
+                    // Invisible placeholder for balance
+                    Color.clear
+                        .frame(width: 44, height: 44)
                 }
-                .padding(.horizontal)
-                .padding(.vertical, 16)
-                .background(Color.black)
+                .padding(.horizontal, AppTheme.Spacing.small)
+                .padding(.vertical, AppTheme.Spacing.small)
                 
-                VStack(spacing: 20) {
-                    // Original email info
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Following up with: \(outreachRecord.professorName)")
-                            .font(.headline)
-                            .padding(.top, 8)
-                        
-                        Text("Original email sent \(outreachRecord.daysSinceContact) days ago")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        
-                        // Add professor's website link and note
-                        VStack(alignment: .leading, spacing: 8) {
-                            Divider()
-                                .padding(.vertical, 4)
+                ScrollView {
+                    VStack(spacing: AppTheme.Spacing.medium) {
+                        // Original email info
+                        VStack(alignment: .leading, spacing: AppTheme.Spacing.xxSmall) {
+                            Text("Following up with: \(outreachRecord.professorName)")
+                                .font(AppTheme.Typography.headline)
+                                .foregroundColor(AppTheme.Colors.primaryText)
                             
-                            HStack {
-                                Image(systemName: "info.circle")
-                                    .foregroundColor(.black)
-                                Text("Need the professor's email? Find it on their website:")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
+                            Text("Original email sent \(outreachRecord.daysSinceContact) days ago")
+                                .font(AppTheme.Typography.subheadline)
+                                .foregroundColor(AppTheme.Colors.secondaryText)
                             
-                            Link(destination: bestWebsiteUrl) {
+                            // Professor's website link
+                            VStack(alignment: .leading, spacing: AppTheme.Spacing.xxSmall) {
+                                Divider()
+                                    .background(AppTheme.Colors.divider)
+                                    .padding(.vertical, AppTheme.Spacing.xxxSmall)
+                                
                                 HStack {
-                                    Image(systemName: "globe")
-                                        .foregroundColor(.black)
-                                    
-                                    if outreachRecord.profileUrl != nil || professorDetails != nil {
-                                        Text("Visit \(outreachRecord.professorName)'s Website")
-                                            .foregroundColor(.black)
-                                            .underline()
-                                    } else {
-                                        Text("Search for \(outreachRecord.professorName)")
-                                            .foregroundColor(.black)
-                                            .underline()
-                                    }
-                                    
-                                    Spacer()
-                                    Image(systemName: "arrow.up.right.square")
-                                        .foregroundColor(.black)
+                                    Image(systemName: "info.circle")
+                                        .foregroundColor(AppTheme.Colors.accent)
+                                    Text("Need the professor's email? Find it on their website:")
+                                        .font(AppTheme.Typography.caption)
+                                        .foregroundColor(AppTheme.Colors.secondaryText)
                                 }
-                                .padding(10)
-                                .background(Color.black.opacity(0.1))
-                                .cornerRadius(8)
-                            }
-                        }
-                        
-                        // Show warning if not enough days have passed
-                        if !canSendFollowUp {
-                            HStack {
-                                Image(systemName: "exclamationmark.triangle.fill")
-                                    .foregroundColor(.orange)
-                                Text("It's recommended to wait at least \(minimumDaysForFollowUp) days before sending a follow-up email.")
-                                    .font(.caption)
-                                    .foregroundColor(.orange)
-                            }
-                            .padding(.top, 4)
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal)
-                    .padding(.top, 8)
-                    
-                    // Email form
-                    VStack(spacing: 16) {
-                        // To field
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("To")
-                                .font(.headline)
-                                .foregroundColor(.black)
-                            
-                            TextField("professor@university.edu", text: $recipient)
-                                .padding()
-                                .background(Color(.systemGray6))
-                                .cornerRadius(10)
-                        }
-                        .padding(.horizontal)
-                        
-                        // Subject field
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Subject")
-                                .font(.headline)
-                                .foregroundColor(.black)
-                            
-                            TextField("Re: Research Inquiry", text: $subject)
-                                .padding()
-                                .background(Color(.systemGray6))
-                                .cornerRadius(10)
-                        }
-                        .padding(.horizontal)
-                        
-                        // Body field
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Message")
-                                .font(.headline)
-                                .foregroundColor(.black)
-                            
-                            if isGenerating {
-                                HStack {
-                                    Spacer()
-                                    VStack {
-                                        ProgressView()
-                                            .progressViewStyle(CircularProgressViewStyle(tint: .black))
-                                        Text("Generating follow-up email...")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                            .padding(.top, 4)
+                                
+                                Link(destination: bestWebsiteUrl) {
+                                    HStack {
+                                        Image(systemName: "globe")
+                                            .foregroundColor(AppTheme.Colors.accent)
+                                        
+                                        if outreachRecord.profileUrl != nil || professorDetails != nil {
+                                            Text("Visit \(outreachRecord.professorName)'s Website")
+                                                .foregroundColor(AppTheme.Colors.accent)
+                                                .underline()
+                                        } else {
+                                            Text("Search for \(outreachRecord.professorName)")
+                                                .foregroundColor(AppTheme.Colors.accent)
+                                                .underline()
+                                        }
+                                        
+                                        Spacer()
+                                        Image(systemName: "arrow.up.right.square")
+                                            .foregroundColor(AppTheme.Colors.accent)
                                     }
-                                    .padding(40)
-                                    Spacer()
+                                    .padding(AppTheme.Spacing.xSmall)
+                                    .background(AppTheme.Colors.accent.opacity(0.1))
+                                    .cornerRadius(AppTheme.CornerRadius.small)
                                 }
-                                .background(Color(.systemGray6))
-                                .cornerRadius(10)
-                                .frame(height: 200)
-                            } else {
-                                TextEditor(text: $bodyText)
-                                    .frame(minHeight: 200)
-                                    .padding(2)
-                                    .background(Color(.systemGray6))
-                                    .cornerRadius(10)
                             }
                             
-                            if let err = generationError {
-                                Text(err)
-                                    .foregroundColor(.red)
-                                    .font(.caption)
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
-                    
-                    // Buttons
-                    VStack(spacing: 12) {
-                        Button(action: {
-                            generateFollowUpTemplate()
-                        }) {
-                            HStack {
-                                Image(systemName: "sparkles")
-                                Text("Generate Brief Follow-up")
-                                    .fontWeight(.medium)
-                            }
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                            .background(isGenerating ? Color.gray : Color.black)
-                            .cornerRadius(10)
-                        }
-                        .disabled(isGenerating)
-                        .padding(.horizontal)
-                        
-                        Button(action: {
+                            // Warning if not enough days have passed
                             if !canSendFollowUp {
-                                showingTooEarlyAlert = true
-                            } else if isValidEmail(recipient) {
-                                sendEmail()
-                            } else {
-                                showingMailAlert = true
+                                HStack {
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                        .foregroundColor(AppTheme.Colors.warning)
+                                    Text("It's recommended to wait at least \(minimumDaysForFollowUp) days before sending a follow-up email.")
+                                        .font(AppTheme.Typography.caption)
+                                        .foregroundColor(AppTheme.Colors.warning)
+                                }
+                                .padding(.top, AppTheme.Spacing.xxxSmall)
                             }
-                        }) {
-                            HStack {
-                                Image(systemName: "paperplane.fill")
-                                Text("Send Follow-up Email")
-                                    .fontWeight(.medium)
-                            }
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                            .background(
-                                recipient.isEmpty || subject.isEmpty || bodyText.isEmpty || !canSendFollowUp
-                                ? Color.gray
-                                : Color.black
-                            )
-                            .cornerRadius(10)
                         }
-                        .disabled(recipient.isEmpty || subject.isEmpty || bodyText.isEmpty)
-                        .padding(.horizontal)
+                        .padding(.horizontal, AppTheme.Spacing.small)
+                        .padding(.top, AppTheme.Spacing.xxSmall)
+                        
+                        // Email form
+                        VStack(spacing: AppTheme.Spacing.small) {
+                            // To field
+                            VStack(alignment: .leading, spacing: AppTheme.Spacing.xxxSmall) {
+                                Text("To")
+                                    .font(AppTheme.Typography.caption)
+                                    .foregroundColor(AppTheme.Colors.secondaryText)
+                                
+                                TextField("", text: $recipient)
+                                    .placeholder(when: recipient.isEmpty) {
+                                        Text("professor@university.edu")
+                                            .foregroundColor(AppTheme.Colors.secondaryText.opacity(0.5))
+                                    }
+                                    .foregroundColor(AppTheme.Colors.primaryText)
+                                    .keyboardType(.emailAddress)
+                                    .autocapitalization(.none)
+                                    .disableAutocorrection(true)
+                                    .padding()
+                                    .background(AppTheme.Colors.buttonSecondary)
+                                    .cornerRadius(AppTheme.CornerRadius.medium)
+                            }
+                            .padding(.horizontal, AppTheme.Spacing.small)
+                            
+                            // Subject field
+                            VStack(alignment: .leading, spacing: AppTheme.Spacing.xxxSmall) {
+                                Text("Subject")
+                                    .font(AppTheme.Typography.caption)
+                                    .foregroundColor(AppTheme.Colors.secondaryText)
+                                
+                                TextField("", text: $subject)
+                                    .placeholder(when: subject.isEmpty) {
+                                        Text("Re: Research Inquiry")
+                                            .foregroundColor(AppTheme.Colors.secondaryText.opacity(0.5))
+                                    }
+                                    .foregroundColor(AppTheme.Colors.primaryText)
+                                    .padding()
+                                    .background(AppTheme.Colors.buttonSecondary)
+                                    .cornerRadius(AppTheme.CornerRadius.medium)
+                            }
+                            .padding(.horizontal, AppTheme.Spacing.small)
+                            
+                            // Body field
+                            VStack(alignment: .leading, spacing: AppTheme.Spacing.xxxSmall) {
+                                Text("Message")
+                                    .font(AppTheme.Typography.caption)
+                                    .foregroundColor(AppTheme.Colors.secondaryText)
+                                
+                                if isGenerating {
+                                    HStack {
+                                        Spacer()
+                                        VStack(spacing: AppTheme.Spacing.small) {
+                                            ProgressView()
+                                                .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.Colors.accent))
+                                            Text("Generating follow-up email...")
+                                                .font(AppTheme.Typography.caption)
+                                                .foregroundColor(AppTheme.Colors.secondaryText)
+                                        }
+                                        .padding(AppTheme.Spacing.xxLarge)
+                                        Spacer()
+                                    }
+                                    .background(AppTheme.Colors.buttonSecondary)
+                                    .cornerRadius(AppTheme.CornerRadius.medium)
+                                    .frame(height: 200)
+                                } else {
+                                    TextEditor(text: $bodyText)
+                                        .foregroundColor(AppTheme.Colors.primaryText)
+                                        .frame(minHeight: 200)
+                                        .padding(AppTheme.Spacing.xxSmall)
+                                        .background(AppTheme.Colors.buttonSecondary)
+                                        .cornerRadius(AppTheme.CornerRadius.medium)
+                                }
+                                
+                                if let err = generationError {
+                                    Text(err)
+                                        .foregroundColor(AppTheme.Colors.error)
+                                        .font(AppTheme.Typography.caption)
+                                }
+                            }
+                            .padding(.horizontal, AppTheme.Spacing.small)
+                        }
+                        
+                        // Buttons
+                        VStack(spacing: AppTheme.Spacing.xSmall) {
+                            Button(action: {
+                                generateFollowUpTemplate()
+                            }) {
+                                HStack {
+                                    Image(systemName: "sparkles")
+                                    Text("Generate Brief Follow-up")
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, AppTheme.Spacing.small)
+                                .background(isGenerating ? AppTheme.Colors.buttonSecondary : AppTheme.Colors.warning)
+                                .foregroundColor(isGenerating ? AppTheme.Colors.secondaryText : AppTheme.Colors.background)
+                                .cornerRadius(AppTheme.CornerRadius.pill)
+                            }
+                            .disabled(isGenerating)
+                            .padding(.horizontal, AppTheme.Spacing.small)
+                            
+                            Button(action: {
+                                if !canSendFollowUp {
+                                    showingTooEarlyAlert = true
+                                } else if isValidEmail(recipient) {
+                                    sendEmail()
+                                } else {
+                                    showingMailAlert = true
+                                }
+                            }) {
+                                HStack {
+                                    Image(systemName: "paperplane.fill")
+                                    Text("Send Follow-up Email")
+                                }
+                                .primaryButton(isEnabled: !recipient.isEmpty && !subject.isEmpty && !bodyText.isEmpty && canSendFollowUp)
+                            }
+                            .disabled(recipient.isEmpty || subject.isEmpty || bodyText.isEmpty)
+                            .padding(.horizontal, AppTheme.Spacing.small)
+                        }
+                        .padding(.vertical, AppTheme.Spacing.medium)
                     }
-                    .padding(.vertical, 20)
                 }
             }
         }
+        .navigationBarHidden(true)
+        .preferredColorScheme(.dark)
         .onAppear {
-            // Pre-populate subject with shorter format
             subject = "Follow-up: Research Inquiry"
             
-            // DO NOT pre-populate the email field - user needs to enter it again
-            
-            // Try to fetch professor details if we don't have a profileUrl
             if outreachRecord.profileUrl == nil {
                 outreachViewModel.fetchProfessorDetails(byId: outreachRecord.professorId) { professor in
                     self.professorDetails = professor
-                    print("Fetched professor details: \(String(describing: professor?.name)), URL: \(String(describing: professor?.profileUrl))")
                 }
-            } else {
-                print("Already have profile URL: \(String(describing: outreachRecord.profileUrl))")
             }
             
-            // Generate template automatically on appear
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 generateFollowUpTemplate()
             }
@@ -314,7 +302,6 @@ struct FollowUpEmailView: View {
                 }
             )
         }
-        .navigationBarHidden(true)
     }
     
     // Helper methods
@@ -328,7 +315,6 @@ struct FollowUpEmailView: View {
         isGenerating = true
         generationError = nil
         
-        // Use the new version of generateFollowUpEmail that accepts professor's last name
         OpenRouterService.shared.generateFollowUpEmail(
             for: professorLastName,
             originalEmail: outreachRecord.emailSent,
@@ -338,7 +324,6 @@ struct FollowUpEmailView: View {
                 isGenerating = false
                 switch result {
                 case .success(let txt):
-                    // Remove any subject lines that might have been included
                     bodyText = removeSubjectLine(from: txt)
                 case .failure(let err):
                     generationError = err.localizedDescription
@@ -348,17 +333,14 @@ struct FollowUpEmailView: View {
     }
     
     private func removeSubjectLine(from text: String) -> String {
-        // Function to remove subject line if it was included anyway
         let lines = text.components(separatedBy: "\n")
         var result = text
         
-        // Look for typical subject line patterns in the first few lines
         for (index, line) in lines.prefix(3).enumerated() {
             let lowercaseLine = line.lowercased()
             if lowercaseLine.contains("subject:") ||
                lowercaseLine.contains("re:") ||
                lowercaseLine.hasPrefix("subject") {
-                // Remove this line and any empty line after it
                 let componentsToRemove = lines.prefix(index + 2).joined(separator: "\n")
                 result = result.replacingOccurrences(of: componentsToRemove, with: "")
                     .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -378,11 +360,9 @@ struct FollowUpEmailView: View {
         if let url = URL(string: urlString) {
             UIApplication.shared.open(url) { success in
                 if success {
-                    // Save the follow-up email to Firebase
                     outreachViewModel.saveFollowUpEmail(for: outreachRecord, followUpEmail: bodyText)
                     showingSuccessAlert = true
                 } else {
-                    // Handle case where Mail app isn't available
                     generationError = "Failed to open Mail app"
                 }
             }

@@ -7,217 +7,226 @@ struct ProfileView: View {
     @State private var showSignUp = true
     @Environment(\.presentationMode) var presentationMode
 
-    // For testing, follow-up threshold is immediate, but notifications will still use real scheduling
     private let followUpThresholdDays = 0
 
     var body: some View {
         NavigationView {
-            ScrollView {
+            ZStack {
+                AppTheme.Colors.background
+                    .ignoresSafeArea()
+                
                 VStack(spacing: 0) {
-                    // Title
-                    Text("Your Profile")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color.black)
-
-                    if authViewModel.isAuthenticated {
-                        // Account Section
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Account")
-                                .font(.headline)
-                                .foregroundColor(.black)
-                                .padding(.horizontal, 16)
-
-                            HStack(spacing: 16) {
-                                ZStack {
-                                    Circle()
-                                        .fill(Color.black)
-                                        .frame(width: 60, height: 60)
-                                    Text(getFirstLetter(of: authViewModel.user?.email ?? ""))
-                                        .font(.system(size: 30, weight: .bold))
-                                        .foregroundColor(.white)
-                                }
-
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(getDisplayName(from: authViewModel.user?.email ?? ""))
-                                        .font(.subheadline)
-                                        .fontWeight(.medium)
-                                    Text("Signed in")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-
-                                Spacer()
-
-                                Button(action: {
-                                    authViewModel.signOut()
-                                }) {
-                                    Text("Sign Out")
-                                        .font(.subheadline)
-                                        .fontWeight(.medium)
-                                        .foregroundColor(.white)
-                                        .padding(.horizontal, 16)
-                                        .padding(.vertical, 8)
-                                        .background(Color.black)
-                                        .cornerRadius(10)
-                                }
-                            }
-                            .padding(16)
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(Color(.systemBackground))
-                                    .shadow(color: Color.black.opacity(0.07), radius: 8, x: 0, y: 2)
-                            )
-                            .padding(.horizontal)
+                    // Header with back button
+                    HStack {
+                        Button(action: {
+                            presentationMode.wrappedValue.dismiss()
+                        }) {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundColor(AppTheme.Colors.primaryText)
+                                .frame(width: 44, height: 44)
+                                .background(AppTheme.Colors.buttonSecondary)
+                                .clipShape(Circle())
                         }
-                        .padding(.top, 16)
+                        
+                        Spacer()
+                        
+                        Text("Your Profile")
+                            .font(AppTheme.Typography.title2)
+                            .foregroundColor(AppTheme.Colors.primaryText)
+                        
+                        Spacer()
+                        
+                        // Invisible placeholder for balance
+                        Color.clear
+                            .frame(width: 44, height: 44)
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.small)
+                    .padding(.vertical, AppTheme.Spacing.small)
+                    
+                    ScrollView {
+                        VStack(spacing: AppTheme.Spacing.medium) {
+                            if authViewModel.isAuthenticated {
+                                // Account Section
+                                VStack(alignment: .leading, spacing: AppTheme.Spacing.small) {
+                                    Text("Account")
+                                        .font(AppTheme.Typography.headline)
+                                        .foregroundColor(AppTheme.Colors.accent)
+                                        .padding(.horizontal, AppTheme.Spacing.small)
 
-                        // Outreach Section
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Text("Professor Outreach")
-                                    .font(.headline)
-                                    .foregroundColor(.black)
-                                Spacer()
-                                Text("\(outreachViewModel.outreachRecords.count) contacts")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color.gray.opacity(0.1))
-                                    .cornerRadius(8)
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.top, 16)
-                            .padding(.bottom, 8)
+                                    HStack(spacing: AppTheme.Spacing.small) {
+                                        ZStack {
+                                            Circle()
+                                                .fill(AppTheme.Colors.accent)
+                                                .frame(width: 60, height: 60)
+                                            Text(getFirstLetter(of: authViewModel.user?.email ?? ""))
+                                                .font(.system(size: 30, weight: .bold))
+                                                .foregroundColor(AppTheme.Colors.primaryText)
+                                        }
 
-                            if outreachViewModel.isLoading {
-                                HStack {
-                                    Spacer()
-                                    ProgressView("Loading your outreach history...")
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .black))
-                                        .padding()
-                                    Spacer()
+                                        VStack(alignment: .leading, spacing: AppTheme.Spacing.xxxSmall) {
+                                            Text(getDisplayName(from: authViewModel.user?.email ?? ""))
+                                                .font(AppTheme.Typography.subheadline)
+                                                .fontWeight(.medium)
+                                                .foregroundColor(AppTheme.Colors.primaryText)
+                                            Text("Signed in")
+                                                .font(AppTheme.Typography.caption)
+                                                .foregroundColor(AppTheme.Colors.secondaryText)
+                                        }
+
+                                        Spacer()
+
+                                        Button(action: {
+                                            authViewModel.signOut()
+                                        }) {
+                                            Text("Sign Out")
+                                                .font(AppTheme.Typography.subheadline)
+                                                .fontWeight(.medium)
+                                                .foregroundColor(AppTheme.Colors.primaryText)
+                                                .padding(.horizontal, AppTheme.Spacing.small)
+                                                .padding(.vertical, AppTheme.Spacing.xxSmall)
+                                                .background(AppTheme.Colors.accent)
+                                                .cornerRadius(AppTheme.CornerRadius.pill)
+                                        }
+                                    }
+                                    .padding(AppTheme.Spacing.small)
+                                    .darkCard()
                                 }
-                            } else if let error = outreachViewModel.errorMessage {
-                                Text("Error: \(error)")
-                                    .font(.subheadline)
-                                    .foregroundColor(.red)
-                                    .padding()
-                            } else if outreachViewModel.outreachRecords.isEmpty {
-                                VStack(spacing: 16) {
-                                    Spacer().frame(height: 20)
-                                    Image(systemName: "envelope.badge.shield.half.filled")
-                                        .font(.system(size: 50))
-                                        .foregroundColor(.gray.opacity(0.5))
-                                        .padding()
-                                    Text("No outreach yet")
-                                        .font(.headline)
-                                        .foregroundColor(.primary)
-                                    Text("When you contact professors, your outreach history will appear here")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                        .multilineTextAlignment(.center)
-                                        .padding(.horizontal, 32)
-                                        .padding(.bottom)
-                                    Spacer().frame(height: 20)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 40)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color(.systemBackground))
-                                        .shadow(color: Color.black.opacity(0.07), radius: 8, x: 0, y: 2)
-                                )
-                                .padding(.horizontal)
-                            } else {
-                                VStack(spacing: 16) {
-                                    ForEach(outreachViewModel.outreachRecords) { record in
-                                        EnhancedOutreachRecordRow(
-                                            record: record,
-                                            followUpThresholdDays: followUpThresholdDays
-                                        )
+
+                                // Outreach Section
+                                VStack(alignment: .leading, spacing: AppTheme.Spacing.small) {
+                                    HStack {
+                                        Text("Professor Outreach")
+                                            .font(AppTheme.Typography.headline)
+                                            .foregroundColor(AppTheme.Colors.accent)
+                                        Spacer()
+                                        if !outreachViewModel.outreachRecords.isEmpty {
+                                            Text("\(outreachViewModel.outreachRecords.count) contacts")
+                                                .font(AppTheme.Typography.caption)
+                                                .foregroundColor(AppTheme.Colors.secondaryText)
+                                                .padding(.horizontal, AppTheme.Spacing.xxSmall)
+                                                .padding(.vertical, AppTheme.Spacing.xxxSmall)
+                                                .background(AppTheme.Colors.buttonSecondary)
+                                                .cornerRadius(AppTheme.CornerRadius.small)
+                                        }
+                                    }
+                                    .padding(.horizontal, AppTheme.Spacing.small)
+                                    .padding(.top, AppTheme.Spacing.small)
+
+                                    if outreachViewModel.isLoading {
+                                        HStack {
+                                            Spacer()
+                                            ProgressView("Loading your outreach history...")
+                                                .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.Colors.accent))
+                                                .foregroundColor(AppTheme.Colors.secondaryText)
+                                                .padding()
+                                            Spacer()
+                                        }
+                                    } else if let error = outreachViewModel.errorMessage {
+                                        Text("Error: \(error)")
+                                            .font(AppTheme.Typography.subheadline)
+                                            .foregroundColor(AppTheme.Colors.error)
+                                            .padding()
+                                    } else if outreachViewModel.outreachRecords.isEmpty {
+                                        VStack(spacing: AppTheme.Spacing.small) {
+                                            Spacer().frame(height: AppTheme.Spacing.medium)
+                                            Image(systemName: "envelope.badge.shield.half.filled")
+                                                .font(.system(size: 50))
+                                                .foregroundColor(AppTheme.Colors.secondaryText.opacity(0.5))
+                                                .padding()
+                                            Text("No outreach yet")
+                                                .font(AppTheme.Typography.headline)
+                                                .foregroundColor(AppTheme.Colors.primaryText)
+                                            Text("When you contact professors, your outreach history will appear here")
+                                                .font(AppTheme.Typography.subheadline)
+                                                .foregroundColor(AppTheme.Colors.secondaryText)
+                                                .multilineTextAlignment(.center)
+                                                .padding(.horizontal, AppTheme.Spacing.xLarge)
+                                                .padding(.bottom)
+                                            Spacer().frame(height: AppTheme.Spacing.medium)
+                                        }
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, AppTheme.Spacing.xxLarge)
+                                        .darkCard()
+                                    } else {
+                                        VStack(spacing: AppTheme.Spacing.small) {
+                                            ForEach(outreachViewModel.outreachRecords) { record in
+                                                EnhancedOutreachRecordRow(
+                                                    record: record,
+                                                    followUpThresholdDays: followUpThresholdDays
+                                                )
+                                            }
+                                        }
+                                        .padding(.bottom, AppTheme.Spacing.medium)
                                     }
                                 }
-                                .padding(.horizontal)
-                                .padding(.bottom, 20)
+                            } else {
+                                // Not logged in
+                                VStack(spacing: AppTheme.Spacing.large) {
+                                    Spacer().frame(height: AppTheme.Spacing.xxLarge)
+                                    Image(systemName: "person.badge.shield.checkmark")
+                                        .font(.system(size: 70))
+                                        .foregroundColor(AppTheme.Colors.accent.opacity(0.8))
+                                        .padding(.bottom, AppTheme.Spacing.small)
+                                    Text("Sign in to Track Your Outreach")
+                                        .font(AppTheme.Typography.title3)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(AppTheme.Colors.primaryText)
+                                        .multilineTextAlignment(.center)
+                                    Text("Create an account to keep track of professors you've contacted and when you need to follow up")
+                                        .font(AppTheme.Typography.subheadline)
+                                        .foregroundColor(AppTheme.Colors.secondaryText)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal, AppTheme.Spacing.xLarge)
+                                        .padding(.bottom, AppTheme.Spacing.xxSmall)
+                                    Button(action: {
+                                        showingLoginSheet = true
+                                    }) {
+                                        Text("Sign In / Sign Up")
+                                            .primaryButton()
+                                    }
+                                    .padding(.horizontal, AppTheme.Spacing.xxLarge)
+                                    .padding(.top, AppTheme.Spacing.xxSmall)
+                                    Spacer()
+                                }
+                                .padding(.vertical, AppTheme.Spacing.xxLarge)
+                                .darkCard()
+                                .padding(.horizontal, AppTheme.Spacing.small)
+                                .padding(.vertical, AppTheme.Spacing.medium)
                             }
                         }
-                    } else {
-                        // Not logged in
-                        VStack(spacing: 24) {
-                            Spacer().frame(height: 40)
-                            Image(systemName: "person.badge.shield.checkmark")
-                                .font(.system(size: 70))
-                                .foregroundColor(.black.opacity(0.8))
-                                .padding(.bottom, 16)
-                            Text("Sign in to Track Your Outreach")
-                                .font(.title3)
-                                .fontWeight(.bold)
-                                .multilineTextAlignment(.center)
-                            Text("Create an account to keep track of professors you've contacted and when you need to follow up")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal, 32)
-                                .padding(.bottom, 8)
-                            Button(action: {
-                                showingLoginSheet = true
-                            }) {
-                                Text("Sign In / Sign Up")
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.white)
-                                    .frame(width: 200)
-                                    .padding()
-                                    .background(Color.black)
-                                    .cornerRadius(10)
-                            }
-                            .padding(.top, 8)
-                            Spacer()
-                        }
-                        .padding(.vertical, 60)
-                        .padding(.horizontal, 20)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color(.systemBackground))
-                                .shadow(color: Color.black.opacity(0.07), radius: 8, x: 0, y: 2)
-                        )
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 20)
+                        .padding(.horizontal, AppTheme.Spacing.small)
+                        .padding(.top, AppTheme.Spacing.small)
                     }
                 }
-                .background(Color(.systemGroupedBackground).ignoresSafeArea())
-                .onAppear {
-                    if authViewModel.isAuthenticated {
-                        outreachViewModel.loadOutreachRecords()
-                    }
+            }
+            .navigationBarHidden(true)
+            .preferredColorScheme(.dark)
+            .onAppear {
+                if authViewModel.isAuthenticated {
+                    outreachViewModel.loadOutreachRecords()
                 }
-                .onChange(of: authViewModel.isAuthenticated) { isAuthenticated in
-                    if isAuthenticated {
-                        outreachViewModel.loadOutreachRecords()
-                    }
+            }
+            .onChange(of: authViewModel.isAuthenticated) { isAuthenticated in
+                if isAuthenticated {
+                    outreachViewModel.loadOutreachRecords()
                 }
-                .sheet(isPresented: $showingLoginSheet) {
-                    NavigationView {
-                        LoginView(showSignUp: $showSignUp)
-                            .environmentObject(authViewModel)
-                    }
+            }
+            .sheet(isPresented: $showingLoginSheet) {
+                NavigationView {
+                    LoginView(showSignUp: $showSignUp)
+                        .environmentObject(authViewModel)
                 }
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
     }
 
-    // Helper to get display name from email
     private func getDisplayName(from email: String) -> String {
         let components = email.components(separatedBy: "@")
         return components.first ?? email
     }
 
-    // Helper to get first letter for avatar
     private func getFirstLetter(of email: String) -> String {
         return String(email.prefix(1)).uppercased()
     }

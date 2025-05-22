@@ -11,19 +11,19 @@ struct ProfileButton: View {
         }) {
             ZStack {
                 Circle()
-                    .fill(Color.white.opacity(0.2))
-                    .frame(width: 36, height: 36)
+                    .fill(AppTheme.Colors.buttonSecondary)
+                    .frame(width: 44, height: 44)
                 
                 if authViewModel.isAuthenticated {
                     // Show authenticated icon
                     Image(systemName: "person.circle.fill")
                         .font(.system(size: 20))
-                        .foregroundColor(.white)
+                        .foregroundColor(AppTheme.Colors.primaryText)
                 } else {
                     // Show unauthenticated icon
                     Image(systemName: "person.circle")
                         .font(.system(size: 20))
-                        .foregroundColor(.white)
+                        .foregroundColor(AppTheme.Colors.primaryText)
                 }
             }
         }

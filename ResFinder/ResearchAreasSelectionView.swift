@@ -25,139 +25,151 @@ struct ResearchAreasSelectionView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Use common navigation header
-            CommonNavigationHeader(title: "\(school) Research Areas")
-                .environmentObject(authViewModel)
+        ZStack {
+            AppTheme.Colors.background
+                .ignoresSafeArea()
             
-            // Search field
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(.red)
-                
-                TextField("Search research areas", text: $searchText)
-                    .font(.body)
-                
-                if !searchText.isEmpty {
-                    Button(action: {
-                        searchText = ""
-                    }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.red)
-                    }
-                }
-            }
-            .padding(10)
-            .background(Color(.systemGray6))
-            .cornerRadius(10)
-            .padding(.horizontal)
-            .padding(.top, 12)
-            
-            if vm.isLoading {
-                Spacer()
-                ProgressView("Loading research areas...")
-                    .progressViewStyle(CircularProgressViewStyle(tint: .red))
-                    .padding()
-                Spacer()
-            } else if let error = vm.errorMessage {
-                Spacer()
-                VStack {
-                    Image(systemName: "exclamationmark.triangle")
-                        .font(.system(size: 50))
-                        .foregroundColor(.red)
-                        .padding()
-                    
-                    Text("Error")
-                        .font(.headline)
-                        .padding(.bottom, 4)
-                    
-                    Text(error)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                }
-                Spacer()
-            } else {
-                // Results count
-                HStack {
-                    Text("\(filteredAreas.count) areas found")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .padding(.horizontal)
-                        .padding(.top, 8)
-                    
-                    Spacer()
-                    
-                    if !selectedAreas.isEmpty {
-                        Text("\(selectedAreas.count) selected")
-                            .font(.subheadline)
-                            .foregroundColor(.red)
-                            .padding(.horizontal)
-                            .padding(.top, 8)
-                    }
-                }
-                
-                // Areas list
-                List {
-                    ForEach(filteredAreas, id: \.self) { area in
-                        MultipleSelectionRow(
-                            title: area,
-                            isSelected: selectedAreas.contains(area),
-                            action: {
-                                if selectedAreas.contains(area) {
-                                    selectedAreas.remove(area)
-                                } else {
-                                    selectedAreas.insert(area)
-                                }
-                            }
-                        )
-                    }
-                }
-                .listStyle(InsetGroupedListStyle())
-            }
-            
-            // Next button as full-width button at bottom
-            VStack {
-                NavigationLink(
-                    destination: ProfessorsListView(
-                        school: school,
-                        researchFilters: Array(selectedAreas)
-                    )
+            VStack(spacing: 0) {
+                CommonNavigationHeader(title: "\(school) Research Areas")
                     .environmentObject(authViewModel)
-                ) {
-                    Text(buttonText)
-                        .fontWeight(.semibold)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(selectedAreas.isEmpty ? Color.gray.opacity(0.3) : Color.red)
-                        .foregroundColor(.white)
-                        .cornerRadius(14)
-                        .padding(.horizontal)
-                }
-                .disabled(selectedAreas.isEmpty)
-                .padding(.vertical, 8)
                 
-                // Hint text at bottom
-                if selectedAreas.isEmpty {
-                    Text("Select at least one research area")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .padding(.bottom, 8)
+                // Search field
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(AppTheme.Colors.secondaryText)
+                    
+                    TextField("", text: $searchText)
+                        .placeholder(when: searchText.isEmpty) {
+                            Text("Search research areas")
+                                .foregroundColor(AppTheme.Colors.secondaryText.opacity(0.5))
+                        }
+                        .foregroundColor(AppTheme.Colors.primaryText)
+                        .font(AppTheme.Typography.body)
+                    
+                    if !searchText.isEmpty {
+                        Button(action: {
+                            searchText = ""
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(AppTheme.Colors.secondaryText)
+                        }
+                    }
+                }
+                .padding(AppTheme.Spacing.xSmall)
+                .background(AppTheme.Colors.buttonSecondary)
+                .cornerRadius(AppTheme.CornerRadius.medium)
+                .padding(.horizontal, AppTheme.Spacing.small)
+                .padding(.top, AppTheme.Spacing.xSmall)
+                
+                if vm.isLoading {
+                    Spacer()
+                    VStack(spacing: AppTheme.Spacing.small) {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.Colors.accent))
+                            .scaleEffect(1.2)
+                        Text("Loading research areas...")
+                            .font(AppTheme.Typography.subheadline)
+                            .foregroundColor(AppTheme.Colors.secondaryText)
+                    }
+                    Spacer()
+                } else if let error = vm.errorMessage {
+                    Spacer()
+                    VStack(spacing: AppTheme.Spacing.small) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 50))
+                            .foregroundColor(AppTheme.Colors.error)
+                            .padding()
+                        
+                        Text("Error")
+                            .font(AppTheme.Typography.headline)
+                            .foregroundColor(AppTheme.Colors.primaryText)
+                            .padding(.bottom, AppTheme.Spacing.xxxSmall)
+                        
+                        Text(error)
+                            .font(AppTheme.Typography.subheadline)
+                            .foregroundColor(AppTheme.Colors.secondaryText)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
+                    Spacer()
+                } else {
+                    // Results count
+                    HStack {
+                        Text("\(filteredAreas.count) areas found")
+                            .font(AppTheme.Typography.subheadline)
+                            .foregroundColor(AppTheme.Colors.secondaryText)
+                        
+                        Spacer()
+                        
+                        if !selectedAreas.isEmpty {
+                            Text("\(selectedAreas.count) selected")
+                                .font(AppTheme.Typography.subheadline)
+                                .foregroundColor(AppTheme.Colors.accent)
+                        }
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.small)
+                    .padding(.top, AppTheme.Spacing.xxSmall)
+                    
+                    // Areas list
+                    ScrollView {
+                        VStack(spacing: AppTheme.Spacing.xxSmall) {
+                            ForEach(filteredAreas, id: \.self) { area in
+                                MultipleSelectionRow(
+                                    title: area,
+                                    isSelected: selectedAreas.contains(area),
+                                    action: {
+                                        if selectedAreas.contains(area) {
+                                            selectedAreas.remove(area)
+                                        } else {
+                                            selectedAreas.insert(area)
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                        .padding(.horizontal, AppTheme.Spacing.small)
+                        .padding(.top, AppTheme.Spacing.xxSmall)
+                        .padding(.bottom, 100) // Space for bottom button
+                    }
+                }
+                
+                // Bottom action button
+                VStack(spacing: 0) {
+                    Divider()
+                        .background(AppTheme.Colors.divider)
+                    
+                    VStack(spacing: AppTheme.Spacing.xxSmall) {
+                        NavigationLink(
+                            destination: ProfessorsListView(
+                                school: school,
+                                researchFilters: Array(selectedAreas)
+                            )
+                            .environmentObject(authViewModel)
+                        ) {
+                            Text(buttonText)
+                                .primaryButton(isEnabled: !selectedAreas.isEmpty)
+                        }
+                        .disabled(selectedAreas.isEmpty)
+                        .padding(.horizontal, AppTheme.Spacing.small)
+                        .padding(.top, AppTheme.Spacing.small)
+                        
+                        if selectedAreas.isEmpty {
+                            Text("Select at least one research area")
+                                .font(AppTheme.Typography.caption)
+                                .foregroundColor(AppTheme.Colors.secondaryText)
+                                .padding(.bottom, AppTheme.Spacing.xxSmall)
+                        }
+                    }
+                    .padding(.bottom, AppTheme.Spacing.small)
+                    .background(AppTheme.Colors.background)
                 }
             }
-            .background(
-                Rectangle()
-                    .fill(Color(.systemBackground))
-                    .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: -4)
-            )
         }
-        .background(Color(.systemGroupedBackground).ignoresSafeArea())
-        .onAppear { vm.load() }
         .navigationBarHidden(true)
+        .preferredColorScheme(.dark)
+        .onAppear { vm.load() }
     }
     
-    // Better button text based on selection state
     private var buttonText: String {
         if selectedAreas.isEmpty {
             return "View Professors"
@@ -169,7 +181,7 @@ struct ResearchAreasSelectionView: View {
     }
 }
 
-// Improved selection row with animation
+// Improved selection row with dark theme
 struct MultipleSelectionRow: View {
     let title: String
     let isSelected: Bool
@@ -179,30 +191,33 @@ struct MultipleSelectionRow: View {
         Button(action: action) {
             HStack {
                 Text(title)
-                    .font(.body)
-                    .foregroundColor(.primary)
+                    .font(AppTheme.Typography.body)
+                    .foregroundColor(AppTheme.Colors.primaryText)
                 
                 Spacer()
                 
                 // Checkmark
                 ZStack {
                     Circle()
-                        .fill(isSelected ? Color.red : Color.clear)
+                        .fill(isSelected ? AppTheme.Colors.accent : Color.clear)
                         .frame(width: 24, height: 24)
                         .overlay(
                             Circle()
-                                .stroke(isSelected ? Color.red : Color.gray.opacity(0.5), lineWidth: 1.5)
+                                .stroke(isSelected ? AppTheme.Colors.accent : AppTheme.Colors.buttonSecondary, lineWidth: 2)
                         )
                     
                     if isSelected {
                         Image(systemName: "checkmark")
                             .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(AppTheme.Colors.primaryText)
                     }
                 }
             }
+            .padding(.vertical, AppTheme.Spacing.xSmall)
+            .padding(.horizontal, AppTheme.Spacing.small)
+            .background(AppTheme.Colors.cardBackground)
+            .cornerRadius(AppTheme.CornerRadius.medium)
             .contentShape(Rectangle())
         }
-        .padding(.vertical, 4)
     }
 }

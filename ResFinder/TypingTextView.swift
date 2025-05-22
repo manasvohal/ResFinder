@@ -1,29 +1,41 @@
-// File: TypingTextView.swift
-// A simple typing‑effect view for SwiftUI
 import SwiftUI
 
 struct TypingTextView: View {
-    let fullText: String
-    let typingInterval: Double
-    @State private var currentText: String = ""
-
+    let text: String
+    let typingSpeed: Double
+    
+    @State private var displayedText = ""
+    @State private var currentIndex = 0
+    
     var body: some View {
-        Text(currentText)
-            .font(AppTheme.Fonts.body)
-            .foregroundColor(AppTheme.Colors.textPrimary)
-            .multilineTextAlignment(.center)
+        Text(displayedText)
+            .font(AppTheme.bodyFont)
+            .foregroundColor(AppTheme.primaryText)
             .onAppear {
-                currentText = ""
-                var charIndex = 0
-                Timer.scheduledTimer(withTimeInterval: typingInterval, repeats: true) { timer in
-                    if charIndex < fullText.count {
-                        let index = fullText.index(fullText.startIndex, offsetBy: charIndex)
-                        currentText.append(fullText[index])
-                        charIndex += 1
-                    } else {
-                        timer.invalidate()
-                    }
-                }
+                startTyping()
+            }
+            .onChange(of: text) { newText in
+                resetTyping()
+                startTyping()
             }
     }
+    
+    private func startTyping() {
+        guard currentIndex < text.count else { return }
+        
+        let index = text.index(text.startIndex, offsetBy: currentIndex)
+        displayedText += String(text[index])
+        currentIndex += 1
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + typingSpeed) {
+            startTyping()
+        }
+    }
+    
+    private func resetTyping() {
+        displayedText = ""
+        currentIndex = 0
+    }
 }
+
+

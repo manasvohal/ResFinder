@@ -11,16 +11,13 @@ struct ProfessorsListView: View {
     // Filter professors
     private var filteredProfessors: [Professor] {
         vm.professors
-            // 1) must match the selected school
             .filter { $0.university.caseInsensitiveCompare(school) == .orderedSame }
-            // 2) must match at least one of the selected research areas (if any)
             .filter { prof in
                 guard !researchFilters.isEmpty else { return true }
                 return !Set(prof.researchAreas)
                     .intersection(Set(researchFilters))
                     .isEmpty
             }
-            // 3) then apply search-text filter
             .filter { prof in
                 guard !searchText.isEmpty else { return true }
                 let term = searchText.lowercased()
@@ -31,164 +28,122 @@ struct ProfessorsListView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Use common navigation header
-            CommonNavigationHeader(title: "\(school) Faculty")
-                .environmentObject(authViewModel)
+        ZStack {
+            AppTheme.Colors.background
+                .ignoresSafeArea()
             
-            // Search bar
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(.red)
+            VStack(spacing: 0) {
+                CommonNavigationHeader(title: "\(school) Faculty")
+                    .environmentObject(authViewModel)
                 
-                TextField("Search faculty by name or department", text: $searchText)
-                    .font(.body)
-                
-                if !searchText.isEmpty {
-                    Button(action: {
-                        searchText = ""
-                    }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.red)
-                    }
-                }
-            }
-            .padding(10)
-            .background(Color(.systemGray6))
-            .cornerRadius(10)
-            .padding(.horizontal)
-            .padding(.top, 12)
-            
-            // Filter chips
-            if !researchFilters.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(researchFilters, id: \.self) { filter in
-                            Text(filter)
-                                .font(.caption)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(Color.red.opacity(0.1))
-                                .foregroundColor(.red)
-                                .cornerRadius(16)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
-                }
-            }
-            
-            if vm.isLoading {
-                Spacer()
-                ProgressView("Loading professors...")
-                    .progressViewStyle(CircularProgressViewStyle(tint: .red))
-                    .padding()
-                Spacer()
-            } else if let error = vm.errorMessage {
-                Spacer()
-                VStack {
-                    Image(systemName: "exclamationmark.triangle")
-                        .font(.system(size: 50))
-                        .foregroundColor(.red)
-                        .padding()
-                    
-                    Text("Error")
-                        .font(.headline)
-                        .padding(.bottom, 4)
-                    
-                    Text(error)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                }
-                Spacer()
-            } else {
-                // Results count
+                // Search bar
                 HStack {
-                    Text("Showing \(filteredProfessors.count) of \(vm.totalCount) professors")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .padding(.horizontal)
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(AppTheme.Colors.secondaryText)
                     
+                    TextField("", text: $searchText)
+                        .placeholder(when: searchText.isEmpty) {
+                            Text("Search faculty by name or department")
+                                .foregroundColor(AppTheme.Colors.secondaryText.opacity(0.5))
+                        }
+                        .foregroundColor(AppTheme.Colors.primaryText)
+                        .font(AppTheme.Typography.body)
+                    
+                    if !searchText.isEmpty {
+                        Button(action: {
+                            searchText = ""
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(AppTheme.Colors.secondaryText)
+                        }
+                    }
+                }
+                .padding(AppTheme.Spacing.xSmall)
+                .background(AppTheme.Colors.buttonSecondary)
+                .cornerRadius(AppTheme.CornerRadius.medium)
+                .padding(.horizontal, AppTheme.Spacing.small)
+                .padding(.top, AppTheme.Spacing.xSmall)
+                
+                // Filter chips
+                if !researchFilters.isEmpty {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: AppTheme.Spacing.xxSmall) {
+                            ForEach(researchFilters, id: \.self) { filter in
+                                Text(filter)
+                                    .font(AppTheme.Typography.caption)
+                                    .padding(.horizontal, AppTheme.Spacing.xSmall)
+                                    .padding(.vertical, AppTheme.Spacing.xxxSmall)
+                                    .background(AppTheme.Colors.accent.opacity(0.2))
+                                    .foregroundColor(AppTheme.Colors.accent)
+                                    .cornerRadius(AppTheme.CornerRadius.pill)
+                            }
+                        }
+                        .padding(.horizontal, AppTheme.Spacing.small)
+                        .padding(.vertical, AppTheme.Spacing.xxSmall)
+                    }
+                }
+                
+                if vm.isLoading {
                     Spacer()
-                }
-                .padding(.top, 4)
-                
-                // Professor list
-                List {
-                    ForEach(filteredProfessors) { prof in
-                        NavigationLink(destination: DetailView(prof: prof).environmentObject(authViewModel)) {
-                            ProfessorRowView(professor: prof)
-                        }
+                    VStack(spacing: AppTheme.Spacing.small) {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.Colors.accent))
+                            .scaleEffect(1.2)
+                        Text("Loading professors...")
+                            .font(AppTheme.Typography.subheadline)
+                            .foregroundColor(AppTheme.Colors.secondaryText)
                     }
-                }
-                .listStyle(InsetGroupedListStyle())
-            }
-        }
-        .background(Color(.systemGroupedBackground).ignoresSafeArea())
-        .onAppear { vm.load() }
-        .navigationBarHidden(true)
-    }
-}
-
-// Professor row with improved design
-struct ProfessorRowView: View {
-    let professor: Professor
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .center) {
-                // Professor name and department
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(professor.name)
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                    
-                    Text(professor.department)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                
-                Spacer()
-                
-                // First initial of name as profile placeholder
-                if let initial = professor.name.first {
-                    Text(String(initial))
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(.white)
-                        .frame(width: 40, height: 40)
-                        .background(Color.red)
-                        .clipShape(Circle())
-                }
-            }
-            
-            // Research areas as tags
-            if !professor.researchAreas.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 6) {
-                        ForEach(professor.researchAreas.prefix(3), id: \.self) { area in
-                            Text(area)
-                                .font(.caption2)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color.red.opacity(0.1))
-                                .foregroundColor(.red)
-                                .cornerRadius(8)
-                        }
+                    Spacer()
+                } else if let error = vm.errorMessage {
+                    Spacer()
+                    VStack(spacing: AppTheme.Spacing.small) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 50))
+                            .foregroundColor(AppTheme.Colors.error)
+                            .padding()
                         
-                        if professor.researchAreas.count > 3 {
-                            Text("+\(professor.researchAreas.count - 3)")
-                                .font(.caption2)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color.gray.opacity(0.1))
-                                .cornerRadius(8)
+                        Text("Error")
+                            .font(AppTheme.Typography.headline)
+                            .foregroundColor(AppTheme.Colors.primaryText)
+                            .padding(.bottom, AppTheme.Spacing.xxxSmall)
+                        
+                        Text(error)
+                            .font(AppTheme.Typography.subheadline)
+                            .foregroundColor(AppTheme.Colors.secondaryText)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
+                    Spacer()
+                } else {
+                    // Results count
+                    HStack {
+                        Text("Showing \(filteredProfessors.count) of \(vm.totalCount) professors")
+                            .font(AppTheme.Typography.caption)
+                            .foregroundColor(AppTheme.Colors.secondaryText)
+                        
+                        Spacer()
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.small)
+                    .padding(.top, AppTheme.Spacing.xxxSmall)
+                    
+                    // Professor list
+                    ScrollView {
+                        VStack(spacing: AppTheme.Spacing.small) {
+                            ForEach(filteredProfessors) { prof in
+                                NavigationLink(destination: DetailView(prof: prof).environmentObject(authViewModel)) {
+                                    ModernProfessorRow(professor: prof)
+                                }
+                            }
                         }
+                        .padding(.horizontal, AppTheme.Spacing.small)
+                        .padding(.top, AppTheme.Spacing.xxSmall)
+                        .padding(.bottom, AppTheme.Spacing.large)
                     }
                 }
             }
         }
-        .padding(.vertical, 8)
+        .navigationBarHidden(true)
+        .preferredColorScheme(.dark)
+        .onAppear { vm.load() }
     }
 }
