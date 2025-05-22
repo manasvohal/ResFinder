@@ -25,6 +25,7 @@
 		369618702DD024AC004986F4 /* ProfileButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3696186F2DD024A9004986F4 /* ProfileButton.swift */; };
 		369618722DD12E88004986F4 /* EnhancedOutreachRecordRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369618712DD12E86004986F4 /* EnhancedOutreachRecordRow.swift */; };
 		369618742DD13B90004986F4 /* ComposeEmailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369618732DD13B88004986F4 /* ComposeEmailView.swift */; };
+		36B11BB32DDFF06F007BB1A2 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36B11BB22DDFF06A007BB1A2 /* SplashView.swift */; };
 		36E3E3D22DD91B76007FF139 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36E3E3D12DD91B68007FF139 /* NotificationManager.swift */; };
 		E90694052DC8633F00324117 /* ResFinderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90694042DC8633F00324117 /* ResFinderApp.swift */; };
 		E90694072DC8633F00324117 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90694062DC8633F00324117 /* ContentView.swift */; };
@@ -79,6 +80,7 @@
 		3696186F2DD024A9004986F4 /* ProfileButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileButton.swift; sourceTree = "<group>"; };
 		369618712DD12E86004986F4 /* EnhancedOutreachRecordRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnhancedOutreachRecordRow.swift; sourceTree = "<group>"; };
 		369618732DD13B88004986F4 /* ComposeEmailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposeEmailView.swift; sourceTree = "<group>"; };
+		36B11BB22DDFF06A007BB1A2 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		36E3E3D12DD91B68007FF139 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
 		E90694012DC8633F00324117 /* ResFinder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ResFinder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E90694042DC8633F00324117 /* ResFinderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResFinderApp.swift; sourceTree = "<group>"; };
@@ -158,6 +160,7 @@
 				E906942E2DC866C400324117 /* Info.plist */,
 				369618542DD01744004986F4 /* GoogleService-Info.plist */,
 				3696185D2DD0186D004986F4 /* AppDelegate.swift */,
+				36B11BB22DDFF06A007BB1A2 /* SplashView.swift */,
 				E973D4AD2DDE98FC00300E7A /* AppTheme.swift */,
 				E973D4AF2DDE991500300E7A /* UIComponents.swift */,
 				E973D4B12DDE992F00300E7A /* TypingTextView.swift */,
@@ -382,6 +385,7 @@
 				3696186E2DD0219B004986F4 /* CommonNavigationHeader.swift in Sources */,
 				36E3E3D22DD91B76007FF139 /* NotificationManager.swift in Sources */,
 				369618512DCD751B004986F4 /* ProfessorsViewModel.swift in Sources */,
+				36B11BB32DDFF06F007BB1A2 /* SplashView.swift in Sources */,
 				E973D4B22DDE993600300E7A /* TypingTextView.swift in Sources */,
 				E90694342DC867AC00324117 /* APIClient.swift in Sources */,
 			);

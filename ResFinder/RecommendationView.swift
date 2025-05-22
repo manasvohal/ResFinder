@@ -12,9 +12,10 @@ struct RecommendationView: View {
         ZStack {
             AppTheme.Colors.background
                 .ignoresSafeArea()
-            
+
             VStack(spacing: 0) {
-                CommonNavigationHeader(title: "Recommended Professors")
+                // Updated header title
+                CommonNavigationHeader(title: "Recommended Prof.")
                     .environmentObject(authViewModel)
 
                 if vm.isLoading {
@@ -48,20 +49,23 @@ struct RecommendationView: View {
 
                 Spacer()
 
-                // Bottom action
+                // Stylized bottom button
                 VStack(spacing: 0) {
                     Divider()
                         .background(AppTheme.Colors.divider)
-                    
+
                     Button(action: {
                         navigateToResearchAreas = true
                     }) {
                         Text("Can't see a good match? Select by Research Area")
                             .font(AppTheme.Typography.subheadline)
-                            .foregroundColor(AppTheme.Colors.secondaryText)
-                            .padding()
+                            .foregroundColor(AppTheme.Colors.background)
                             .frame(maxWidth: .infinity)
-                            .background(AppTheme.Colors.cardBackground)
+                            .padding(.vertical, AppTheme.Spacing.medium)
+                            .background(AppTheme.Colors.accent)
+                            .cornerRadius(AppTheme.CornerRadius.medium)
+                            .padding(.horizontal, AppTheme.Spacing.small)
+                            .padding(.vertical, AppTheme.Spacing.xSmall)
                     }
                 }
                 .background(AppTheme.Colors.background)
@@ -87,42 +91,40 @@ struct RecommendationView: View {
 // Modern Professor Row for dark theme
 struct ModernProfessorRow: View {
     let professor: Professor
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.small) {
-            HStack(alignment: .center) {
-                // Professor avatar
+            HStack(alignment: .center, spacing: AppTheme.Spacing.small) {
+                // Avatar
                 ZStack {
                     Circle()
                         .fill(AppTheme.Colors.accent.opacity(0.2))
                         .frame(width: 50, height: 50)
-                    
                     if let initial = professor.name.first {
                         Text(String(initial))
                             .font(.system(size: 20, weight: .semibold))
                             .foregroundColor(AppTheme.Colors.accent)
                     }
                 }
-                
-                // Professor info
+
+                // Name and department
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xxxSmall) {
                     Text(professor.name)
                         .font(AppTheme.Typography.headline)
                         .foregroundColor(AppTheme.Colors.primaryText)
-                    
                     Text(professor.department)
                         .font(AppTheme.Typography.subheadline)
                         .foregroundColor(AppTheme.Colors.secondaryText)
                 }
-                
+
                 Spacer()
-                
+
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(AppTheme.Colors.secondaryText)
             }
-            
-            // Research areas as tags
+
+            // Research areas tags (up to 3 shown)
             if !professor.researchAreas.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: AppTheme.Spacing.xxxSmall) {
@@ -135,7 +137,6 @@ struct ModernProfessorRow: View {
                                 .foregroundColor(AppTheme.Colors.accent)
                                 .cornerRadius(AppTheme.CornerRadius.small)
                         }
-                        
                         if professor.researchAreas.count > 3 {
                             Text("+\(professor.researchAreas.count - 3)")
                                 .font(AppTheme.Typography.caption2)

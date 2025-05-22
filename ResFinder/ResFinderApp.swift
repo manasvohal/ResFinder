@@ -7,39 +7,37 @@ struct ResFinderApp: App {
     @StateObject private var authViewModel = AuthViewModel()
     @StateObject private var outreachViewModel = OutreachViewModel()
 
-    // Holds the record ID passed via deep-link
+    /// For deep‐link follow-ups
     @State private var followUpRecordId: String?
 
     var body: some Scene {
         WindowGroup {
-            LandingView()
+            SplashView()
                 .environmentObject(authViewModel)
                 .environmentObject(outreachViewModel)
-                // Pre-load outreach docs on launch
                 .onAppear {
+                    // preload outreach history
                     outreachViewModel.loadOutreachRecords()
                 }
-                // Handle incoming resfinder:// URLs
                 .onOpenURL { url in
-                    print("💡 Deep link received:", url)
+                    // handle resfinder://followup?recordId=XYZ
                     guard
                         url.scheme == "resfinder",
                         url.host   == "followup",
                         let comps = URLComponents(url: url, resolvingAgainstBaseURL: false),
-                        let id = comps.queryItems?.first(where: { $0.name == "recordId" })?.value
+                        let id    = comps.queryItems?.first(where: { $0.name == "recordId" })?.value
                     else { return }
                     followUpRecordId = id
                 }
-                // Show the follow-up screen when an ID arrives
                 .fullScreenCover(
-                    isPresented: Binding<Bool>(
-                        get: { followUpRecordId != nil },
-                        set: { if !$0 { followUpRecordId = nil } }
+                    isPresented: Binding(
+                        get:  { followUpRecordId != nil },
+                        set:  { if !$0 { followUpRecordId = nil } }
                     )
                 ) {
                     if
                         let recordId = followUpRecordId,
-                        let record = outreachViewModel.outreachRecords.first(where: { $0.id == recordId })
+                        let record   = outreachViewModel.outreachRecords.first(where: { $0.id == recordId })
                     {
                         FollowUpEmailView(outreachRecord: record)
                             .environmentObject(authViewModel)

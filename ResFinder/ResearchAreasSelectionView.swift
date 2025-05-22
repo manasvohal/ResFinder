@@ -6,7 +6,7 @@ struct ResearchAreasSelectionView: View {
     @State private var selectedAreas = Set<String>()
     @State private var searchText = ""
     @EnvironmentObject var authViewModel: AuthViewModel
-    
+
     // Filtered research areas
     private var filteredAreas: [String] {
         if searchText.isEmpty {
@@ -15,7 +15,7 @@ struct ResearchAreasSelectionView: View {
             return availableAreas.filter { $0.localizedCaseInsensitiveContains(searchText) }
         }
     }
-    
+
     // All areas for this school, sorted
     private var availableAreas: [String] {
         let all = vm.professors
@@ -23,21 +23,21 @@ struct ResearchAreasSelectionView: View {
             .flatMap { $0.researchAreas }
         return Array(Set(all)).sorted()
     }
-    
+
     var body: some View {
         ZStack {
             AppTheme.Colors.background
                 .ignoresSafeArea()
-            
+
             VStack(spacing: 0) {
                 CommonNavigationHeader(title: "\(school) Research Areas")
                     .environmentObject(authViewModel)
-                
+
                 // Search field
                 HStack {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(AppTheme.Colors.secondaryText)
-                    
+
                     TextField("", text: $searchText)
                         .placeholder(when: searchText.isEmpty) {
                             Text("Search research areas")
@@ -45,11 +45,11 @@ struct ResearchAreasSelectionView: View {
                         }
                         .foregroundColor(AppTheme.Colors.primaryText)
                         .font(AppTheme.Typography.body)
-                    
+
                     if !searchText.isEmpty {
-                        Button(action: {
+                        Button {
                             searchText = ""
-                        }) {
+                        } label: {
                             Image(systemName: "xmark.circle.fill")
                                 .foregroundColor(AppTheme.Colors.secondaryText)
                         }
@@ -60,7 +60,7 @@ struct ResearchAreasSelectionView: View {
                 .cornerRadius(AppTheme.CornerRadius.medium)
                 .padding(.horizontal, AppTheme.Spacing.small)
                 .padding(.top, AppTheme.Spacing.xSmall)
-                
+
                 if vm.isLoading {
                     Spacer()
                     VStack(spacing: AppTheme.Spacing.small) {
@@ -72,6 +72,7 @@ struct ResearchAreasSelectionView: View {
                             .foregroundColor(AppTheme.Colors.secondaryText)
                     }
                     Spacer()
+
                 } else if let error = vm.errorMessage {
                     Spacer()
                     VStack(spacing: AppTheme.Spacing.small) {
@@ -79,12 +80,10 @@ struct ResearchAreasSelectionView: View {
                             .font(.system(size: 50))
                             .foregroundColor(AppTheme.Colors.error)
                             .padding()
-                        
                         Text("Error")
                             .font(AppTheme.Typography.headline)
                             .foregroundColor(AppTheme.Colors.primaryText)
                             .padding(.bottom, AppTheme.Spacing.xxxSmall)
-                        
                         Text(error)
                             .font(AppTheme.Typography.subheadline)
                             .foregroundColor(AppTheme.Colors.secondaryText)
@@ -92,15 +91,14 @@ struct ResearchAreasSelectionView: View {
                             .padding(.horizontal)
                     }
                     Spacer()
+
                 } else {
                     // Results count
                     HStack {
                         Text("\(filteredAreas.count) areas found")
                             .font(AppTheme.Typography.subheadline)
                             .foregroundColor(AppTheme.Colors.secondaryText)
-                        
                         Spacer()
-                        
                         if !selectedAreas.isEmpty {
                             Text("\(selectedAreas.count) selected")
                                 .font(AppTheme.Typography.subheadline)
@@ -109,7 +107,7 @@ struct ResearchAreasSelectionView: View {
                     }
                     .padding(.horizontal, AppTheme.Spacing.small)
                     .padding(.top, AppTheme.Spacing.xxSmall)
-                    
+
                     // Areas list
                     ScrollView {
                         VStack(spacing: AppTheme.Spacing.xxSmall) {
@@ -132,12 +130,12 @@ struct ResearchAreasSelectionView: View {
                         .padding(.bottom, 100) // Space for bottom button
                     }
                 }
-                
+
                 // Bottom action button
                 VStack(spacing: 0) {
                     Divider()
                         .background(AppTheme.Colors.divider)
-                    
+
                     VStack(spacing: AppTheme.Spacing.xxSmall) {
                         NavigationLink(
                             destination: ProfessorsListView(
@@ -152,7 +150,7 @@ struct ResearchAreasSelectionView: View {
                         .disabled(selectedAreas.isEmpty)
                         .padding(.horizontal, AppTheme.Spacing.small)
                         .padding(.top, AppTheme.Spacing.small)
-                        
+
                         if selectedAreas.isEmpty {
                             Text("Select at least one research area")
                                 .font(AppTheme.Typography.caption)
@@ -169,7 +167,7 @@ struct ResearchAreasSelectionView: View {
         .preferredColorScheme(.dark)
         .onAppear { vm.load() }
     }
-    
+
     private var buttonText: String {
         if selectedAreas.isEmpty {
             return "View Professors"
@@ -181,31 +179,36 @@ struct ResearchAreasSelectionView: View {
     }
 }
 
-// Improved selection row with dark theme
+// Improved selection row with tighter, unindented multi-line text
 struct MultipleSelectionRow: View {
     let title: String
     let isSelected: Bool
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
-            HStack {
+            HStack(alignment: .top, spacing: AppTheme.Spacing.small) {
                 Text(title)
                     .font(AppTheme.Typography.body)
                     .foregroundColor(AppTheme.Colors.primaryText)
-                
+                    .multilineTextAlignment(.leading)
+                    .layoutPriority(1)
+
                 Spacer()
-                
-                // Checkmark
+
                 ZStack {
                     Circle()
                         .fill(isSelected ? AppTheme.Colors.accent : Color.clear)
                         .frame(width: 24, height: 24)
                         .overlay(
                             Circle()
-                                .stroke(isSelected ? AppTheme.Colors.accent : AppTheme.Colors.buttonSecondary, lineWidth: 2)
+                                .stroke(
+                                    isSelected
+                                        ? AppTheme.Colors.accent
+                                        : AppTheme.Colors.buttonSecondary,
+                                    lineWidth: 2
+                                )
                         )
-                    
                     if isSelected {
                         Image(systemName: "checkmark")
                             .font(.system(size: 12, weight: .bold))

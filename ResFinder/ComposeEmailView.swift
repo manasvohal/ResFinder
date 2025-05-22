@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ComposeEmailView: View {
     let prof: Professor
-    
+
     @State private var recipient = ""
     @State private var subject = ""
     @State private var bodyText = ""
@@ -12,292 +12,243 @@ struct ComposeEmailView: View {
     @State private var showingLoginAlert = false
     @State private var showingSuccessAlert = false
     @State private var showSignUp = true
+
     @AppStorage("hasUploadedResume") private var hasUploadedResume = false
     @AppStorage("userName") private var userName = ""
     @EnvironmentObject var authViewModel: AuthViewModel
     @StateObject private var outreachViewModel = OutreachViewModel()
     @Environment(\.presentationMode) var presentationMode
-    
+
     var body: some View {
         ZStack {
-            AppTheme.backgroundColor.ignoresSafeArea()
-            
+            AppTheme.Colors.background
+                .ignoresSafeArea()
+
             VStack(spacing: 0) {
                 CommonNavigationHeader(title: "Email \(prof.name)")
                     .environmentObject(authViewModel)
-                
+
                 ScrollView {
-                    VStack(spacing: 24) {
-                        // Professor website link
-                        VStack(alignment: .leading, spacing: 12) {
-                            HStack(spacing: 8) {
+                    VStack(spacing: AppTheme.Spacing.large) {
+                        // MARK: Website Link Card
+                        VStack(alignment: .leading, spacing: AppTheme.Spacing.small) {
+                            HStack(spacing: AppTheme.Spacing.xSmall) {
                                 Image(systemName: "info.circle")
                                     .foregroundColor(.blue)
                                 Text("Need the professor's email? Find it on their website:")
-                                    .font(AppTheme.captionFont)
-                                    .foregroundColor(AppTheme.secondaryText)
+                                    .font(AppTheme.Typography.caption)
+                                    .foregroundColor(AppTheme.Colors.secondaryText)
                             }
-                            
+
                             Link(destination: prof.profileUrl) {
-                                HStack(spacing: 12) {
-                                    ZStack {
-                                        Circle()
-                                            .fill(Color.blue.opacity(0.2))
-                                            .frame(width: 32, height: 32)
-                                        
-                                        Image(systemName: "globe")
-                                            .foregroundColor(.blue)
-                                            .font(.system(size: 14))
-                                    }
-                                    
+                                HStack {
+                                    Image(systemName: "globe")
+                                        .foregroundColor(.blue)
                                     Text("Visit \(prof.name)'s Website")
-                                        .font(AppTheme.captionFont)
+                                        .font(AppTheme.Typography.caption)
                                         .foregroundColor(.blue)
                                         .underline()
-                                    
                                     Spacer()
-                                    
                                     Image(systemName: "arrow.up.right.square")
                                         .foregroundColor(.blue)
-                                        .font(.system(size: 12))
                                 }
-                                .padding(16)
-                                .background(Color.blue.opacity(0.1))
-                                .cornerRadius(12)
+                                .padding()
+                                .background(AppTheme.Colors.accent.opacity(0.1))
+                                .cornerRadius(AppTheme.CornerRadius.small)
                             }
                         }
-                        .padding(20)
-                        .darkCard()
-                        // Email form
-                        VStack(spacing: 20) {
+                        .padding()
+                        .background(AppTheme.Colors.cardBackground)
+                        .cornerRadius(AppTheme.CornerRadius.large)
+
+                        // MARK: Email Form (fields styled like follow-up page)
+                        VStack(spacing: AppTheme.Spacing.small) {
                             // To field
-                            VStack(alignment: .leading, spacing: 8) {
+                            VStack(alignment: .leading, spacing: AppTheme.Spacing.xxSmall) {
                                 Text("To")
-                                    .font(AppTheme.headlineFont)
-                                    .foregroundColor(AppTheme.primaryRed)
-                                
-                                TextField("prof@example.edu", text: $recipient)
-                                    .font(AppTheme.bodyFont)
-                                    .foregroundColor(AppTheme.primaryText)
-                                    .padding(16)
-                                    .background(AppTheme.cardBackground)
-                                    .cornerRadius(AppTheme.cornerRadius)
+                                    .font(AppTheme.Typography.caption)
+                                    .foregroundColor(AppTheme.Colors.secondaryText)
+
+                                TextField("professor@university.edu", text: $recipient)
                                     .keyboardType(.emailAddress)
                                     .autocapitalization(.none)
                                     .disableAutocorrection(true)
+                                    .foregroundColor(AppTheme.Colors.primaryText)
+                                    .padding()
+                                    .background(AppTheme.Colors.buttonSecondary)
+                                    .cornerRadius(AppTheme.CornerRadius.medium)
                             }
-                            
+                            .padding(.horizontal, AppTheme.Spacing.small)
+
                             // Subject field
-                            VStack(alignment: .leading, spacing: 8) {
+                            VStack(alignment: .leading, spacing: AppTheme.Spacing.xxSmall) {
                                 Text("Subject")
-                                    .font(AppTheme.headlineFont)
-                                    .foregroundColor(AppTheme.primaryRed)
-                                
+                                    .font(AppTheme.Typography.caption)
+                                    .foregroundColor(AppTheme.Colors.secondaryText)
+
                                 TextField("Research Interest", text: $subject)
-                                    .font(AppTheme.bodyFont)
-                                    .foregroundColor(AppTheme.primaryText)
-                                    .padding(16)
-                                    .background(AppTheme.cardBackground)
-                                    .cornerRadius(AppTheme.cornerRadius)
+                                    .foregroundColor(AppTheme.Colors.primaryText)
+                                    .padding()
+                                    .background(AppTheme.Colors.buttonSecondary)
+                                    .cornerRadius(AppTheme.CornerRadius.medium)
                             }
-                            
+                            .padding(.horizontal, AppTheme.Spacing.small)
+
                             // Body field
-                            VStack(alignment: .leading, spacing: 8) {
+                            VStack(alignment: .leading, spacing: AppTheme.Spacing.xxSmall) {
                                 Text("Body")
-                                    .font(AppTheme.headlineFont)
-                                    .foregroundColor(AppTheme.primaryRed)
-                                
+                                    .font(AppTheme.Typography.caption)
+                                    .foregroundColor(AppTheme.Colors.secondaryText)
+
                                 if isGenerating {
-                                    VStack(spacing: 16) {
+                                    HStack {
+                                        Spacer()
                                         ProgressView()
-                                            .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.primaryRed))
+                                            .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.Colors.accent))
                                             .scaleEffect(1.2)
-                                        
-                                        Text("Generating personalized email...")
-                                            .font(AppTheme.captionFont)
-                                            .foregroundColor(AppTheme.secondaryText)
+                                        Spacer()
                                     }
                                     .frame(height: 200)
-                                    .frame(maxWidth: .infinity)
-                                    .background(AppTheme.cardBackground)
-                                    .cornerRadius(AppTheme.cornerRadius)
+                                    .background(AppTheme.Colors.buttonSecondary)
+                                    .cornerRadius(AppTheme.CornerRadius.medium)
                                 } else {
-                                    ZStack(alignment: .topLeading) {
-                                        if bodyText.isEmpty {
-                                            Text("Your email content will appear here...")
-                                                .font(AppTheme.bodyFont)
-                                                .foregroundColor(AppTheme.secondaryText)
-                                                .padding(16)
-                                        }
-                                        
-                                        TextEditor(text: $bodyText)
-                                            .font(AppTheme.bodyFont)
-                                            .foregroundColor(AppTheme.primaryText)
-                                            .padding(8)
-                                            .background(Color.clear)
-                                    }
-                                    .frame(minHeight: 200)
-                                    .background(AppTheme.cardBackground)
-                                    .cornerRadius(AppTheme.cornerRadius)
+                                    TextEditor(text: $bodyText)
+                                        .foregroundColor(AppTheme.Colors.primaryText)
+                                        .padding()
+                                        .background(AppTheme.Colors.buttonSecondary)
+                                        .cornerRadius(AppTheme.CornerRadius.medium)
+                                        .frame(minHeight: 200)
                                 }
-                                
+
                                 if let err = generationError {
                                     Text(err)
-                                        .foregroundColor(.red)
-                                        .font(AppTheme.captionFont)
+                                        .font(AppTheme.Typography.caption)
+                                        .foregroundColor(AppTheme.Colors.error)
                                 }
-                                
+
                                 if !hasUploadedResume {
-                                    HStack(spacing: 8) {
+                                    HStack(spacing: AppTheme.Spacing.xxSmall) {
                                         Image(systemName: "info.circle")
                                             .foregroundColor(.orange)
                                         Text("Resume data unavailable. Your email may not be fully personalized.")
-                                            .font(AppTheme.captionFont)
-                                            .foregroundColor(AppTheme.secondaryText)
+                                            .font(AppTheme.Typography.caption)
+                                            .foregroundColor(AppTheme.Colors.secondaryText)
                                     }
-                                    .padding(.top, 4)
                                 }
                             }
+                            .padding(.horizontal, AppTheme.Spacing.small)
                         }
-                        .padding(20)
-                        .darkCard()
-                        // Buttons
-                        VStack(spacing: 16) {
-                            // Generate button
-                            Button(action: {
+                        // remove .darkCard() wrapper here
+                        // so each field stands alone like follow-up page
+
+                        // MARK: Buttons
+                        VStack(spacing: AppTheme.Spacing.small) {
+                            Button {
                                 generateTemplate()
-                            }) {
-                                HStack(spacing: 8) {
+                            } label: {
+                                HStack {
                                     Image(systemName: "sparkles")
-                                        .font(.system(size: 16))
-                                    Text(hasUploadedResume ? "Generate Personalized Email" : "Generate Template")
-                                        .fontWeight(.medium)
+                                    Text(hasUploadedResume
+                                            ? "Generate Personalized Email"
+                                            : "Generate Template")
                                 }
-                                .foregroundColor(AppTheme.primaryText)
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 16)
-                                .background(isGenerating ? AppTheme.secondaryBackground : Color.orange)
-                                .cornerRadius(AppTheme.buttonCornerRadius)
+                                .padding()
+                                .background(AppTheme.Colors.accent)
+                                .foregroundColor(.white)
+                                .cornerRadius(AppTheme.CornerRadius.pill)
                             }
                             .disabled(isGenerating)
-                            
-                            // Send button
-                            Button(action: {
+
+                            Button {
                                 if isValidEmail(recipient) {
                                     sendEmail()
                                 } else {
                                     showingMailAlert = true
                                 }
-                            }) {
-                                HStack(spacing: 8) {
+                            } label: {
+                                HStack {
                                     Image(systemName: "paperplane.fill")
-                                        .font(.system(size: 16))
                                     Text("Send Email")
-                                        .fontWeight(.medium)
                                 }
-                                .foregroundColor(AppTheme.primaryText)
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 16)
-                                .background(
-                                    recipient.isEmpty || subject.isEmpty || bodyText.isEmpty
-                                    ? AppTheme.secondaryBackground
-                                    : Color.blue
-                                )
-                                .cornerRadius(AppTheme.buttonCornerRadius)
+                                .padding()
+                                .background(AppTheme.Colors.buttonSecondary)
+                                .foregroundColor(AppTheme.Colors.primaryText)
+                                .cornerRadius(AppTheme.CornerRadius.pill)
                             }
                             .disabled(recipient.isEmpty || subject.isEmpty || bodyText.isEmpty)
                         }
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 40)
+                        .padding(.horizontal, AppTheme.Spacing.small)
+                        .padding(.bottom, AppTheme.Spacing.large)
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 20)
+                    .padding(.top, AppTheme.Spacing.small)
                 }
             }
         }
+        .alert("Invalid Email", isPresented: $showingMailAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Please enter a valid email address.")
+        }
+        .alert("Email Sent", isPresented: $showingSuccessAlert) {
+            Button("OK") {
+                presentationMode.wrappedValue.dismiss()
+            }
+        } message: {
+            Text("Your email has been sent and will be tracked in your profile.")
+        }
+        .navigationBarHidden(true)
+        .preferredColorScheme(.dark)
         .onAppear {
+            // Pre-fill fields
             subject = "Research Interest"
-            
             if let email = prof.profileUrl.absoluteString.components(separatedBy: "mailto:").last,
                isValidEmail(email) {
                 recipient = email
             }
         }
-        .alert(isPresented: $showingMailAlert) {
-            Alert(
-                title: Text("Invalid Email"),
-                message: Text("Please enter a valid email address."),
-                dismissButton: .default(Text("OK"))
-            )
-        }
-        .sheet(isPresented: $showingLoginAlert) {
-            NavigationView {
-                LoginView(showSignUp: $showSignUp)
-                    .environmentObject(authViewModel)
-            }
-        }
-        .alert(isPresented: $showingSuccessAlert) {
-            Alert(
-                title: Text("Email Sent"),
-                message: Text("Your email has been sent and will be tracked in your profile."),
-                dismissButton: .default(Text("OK")) {
-                    presentationMode.wrappedValue.dismiss()
-                }
-            )
-        }
-        .navigationBarHidden(true)
     }
-    
-    // MARK: - Helper Methods
-    
+
     private func isValidEmail(_ email: String) -> Bool {
-        let emailRegEx = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
-        let emailPred = NSPredicate(format:"SELF MATCHES %@", emailRegEx)
-        return emailPred.evaluate(with: email)
+        let pattern = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
+        return NSPredicate(format: "SELF MATCHES %@", pattern)
+            .evaluate(with: email)
     }
-    
+
     private func generateTemplate() {
         isGenerating = true
         generationError = nil
-        
-        let lastName = extractLastName(from: prof.name)
-        
-        OpenRouterService.shared.generateEmailBody(for: prof.researchAreas, professorLastName: lastName) { result in
+        let lastName = prof.name.split(separator: " ").last.map(String.init) ?? prof.name
+        OpenRouterService.shared.generateEmailBody(
+            for: prof.researchAreas,
+            professorLastName: lastName
+        ) { result in
             DispatchQueue.main.async {
                 isGenerating = false
                 switch result {
-                case .success(let txt):
-                    bodyText = txt
-                case .failure(let err):
-                    generationError = err.localizedDescription
+                case .success(let txt): bodyText = txt
+                case .failure(let err): generationError = err.localizedDescription
                 }
             }
         }
     }
-    
-    private func extractLastName(from fullName: String) -> String {
-        let components = fullName.components(separatedBy: " ")
-        if components.count > 1 {
-            return components.last ?? ""
-        }
-        return fullName
-    }
-    
+
     private func sendEmail() {
         guard authViewModel.isAuthenticated else {
             showingLoginAlert = true
             return
         }
-        
         let to = recipient.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         let subj = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         let body = bodyText.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-        let urlString = "mailto:\(to)?subject=\(subj)&body=\(body)"
-        
-        if let url = URL(string: urlString) {
+        if let url = URL(string: "mailto:\(to)?subject=\(subj)&body=\(body)") {
             UIApplication.shared.open(url) { success in
                 if success {
-                    outreachViewModel.saveOutreachRecord(for: prof, emailSent: bodyText)
+                    outreachViewModel.saveOutreachRecord(
+                        for: prof,
+                        emailSent: bodyText
+                    )
                     showingSuccessAlert = true
                 } else {
                     generationError = "Failed to open Mail app"
