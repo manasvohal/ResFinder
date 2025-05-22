@@ -1,106 +1,96 @@
 import SwiftUI
 
 struct LandingView: View {
-    @State private var showAuthFlow = false
-    @State private var isActive = false
-    @AppStorage("hasUploadedResume") private var hasUploadedResume = false
     @EnvironmentObject var authViewModel: AuthViewModel
+    @AppStorage("hasUploadedResume") private var hasUploadedResume = false
+    @State private var showAuthFlow = false
+    @State private var navigateNext = false
+
+    // Typing effect state
+    @State private var currentText = ""
+    private let fullText = "Find faculty aligned with you."
+    private let typingInterval = 0.05
 
     var body: some View {
-        NavigationView {
-            ZStack {
-                // Background with red gradient
-                LinearGradient(
-                    gradient: Gradient(colors: [Color.red.opacity(0.9), Color.red.opacity(0.7)]),
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
+        ZStack {
+            // White background
+            Color.white
                 .ignoresSafeArea()
 
-                // Main Content
-                VStack(spacing: 30) {
-                    Spacer()
+            VStack(spacing: 32) {
+                Spacer()
 
-                    // Logo with bigger size and stronger shadow
-                    Image("rf_logo")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 265, height: 265)
-                        .shadow(color: Color.black.opacity(0.3),
-                                radius: 12,
-                                x: 0,
-                                y: 6)
+                // Logo
+                Image("rf_logo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 200, height: 200)
+                    .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
 
-                    // App title with SF font
-                    Text("ReachSearch")
-                        .font(.system(size: 42, weight: .bold, design: .rounded))
+                // App title
+                Text("ReachSearch")
+                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                    .foregroundColor(.black)
+
+                // Typing effect
+                Text(currentText)
+                    .font(.system(size: 16, weight: .regular, design: .rounded))
+                    .foregroundColor(.black)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
+                    .onAppear(perform: startTyping)
+
+                // Get Started button
+                Button(action: handleGetStarted) {
+                    Text("Get Started")
+                        .font(.system(size: 22, weight: .semibold, design: .rounded))
+                        .frame(maxWidth: .infinity, minHeight: 50)
+                        .background(Color.black)
                         .foregroundColor(.white)
-
-                    // Tagline
-                    Text("Connect with professors in your field")
-                        .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.9))
-                        .padding(.bottom, 10)
-
-                    // Get Started button
-                    Button(action: {
-                        withAnimation {
-                            if authViewModel.isAuthenticated && hasUploadedResume {
-                                // User is already authenticated and has resume, go to content
-                                isActive = true
-                            } else {
-                                // User needs to authenticate
-                                showAuthFlow = true
-                            }
-                        }
-                    }) {
-                        Text("Get Started")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.red)
-                            .frame(minWidth: 240, minHeight: 54)
-                            .background(Color.white)
-                            .cornerRadius(27)
-                            .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 4)
-                    }
-
-                    // Debug auth state - remove in production
-                    Text(authViewModel.isAuthenticated ? "Signed in as: \(authViewModel.user?.email ?? "Unknown")" : "Not signed in")
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.7))
-                        .padding(.top, 10)
-
-                    Spacer()
+                        .cornerRadius(25)
                 }
-                .padding()
+                .padding(.horizontal, 32)
+
+                Spacer()
             }
-            .navigationBarHidden(true)
-            .fullScreenCover(isPresented: $showAuthFlow) {
-                // Show the authentication flow when the user presses "Get Started"
-                AuthContainerView()
-                    .environmentObject(authViewModel)
-            }
-            .background(
-                NavigationLink(
-                    destination: ContentView()
-                        .navigationBarBackButtonHidden(true)
-                        .environmentObject(authViewModel),
-                    isActive: $isActive
-                ) {
-                    EmptyView()
-                }
-            )
         }
-        .navigationViewStyle(StackNavigationViewStyle())
-        // Check if user is already authenticated on appear
+        // Auth / Next flows
+        .fullScreenCover(isPresented: $showAuthFlow) {
+            AuthContainerView()
+                .environmentObject(authViewModel)
+        }
+        .fullScreenCover(isPresented: $navigateNext) {
+            ContentView()
+                .environmentObject(authViewModel)
+        }
         .onAppear {
-            print("LandingView: onAppear - Auth state: \(authViewModel.isAuthenticated), Resume: \(hasUploadedResume)")
-            
-            // Small delay to ensure auth state is updated
+            // Auto‑advance if already signed in & resume uploaded
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 if authViewModel.isAuthenticated && hasUploadedResume {
-                    isActive = true
+                    navigateNext = true
                 }
+            }
+        }
+    }
+
+    private func handleGetStarted() {
+        if authViewModel.isAuthenticated && hasUploadedResume {
+            navigateNext = true
+        } else {
+            showAuthFlow = true
+        }
+    }
+
+    private func startTyping() {
+        currentText = ""
+        var idx = 0
+        Timer.scheduledTimer(withTimeInterval: typingInterval, repeats: true) { timer in
+            if idx < fullText.count {
+                let i = fullText.index(fullText.startIndex, offsetBy: idx)
+                currentText.append(fullText[i])
+                idx += 1
+            } else {
+                timer.invalidate()
             }
         }
     }

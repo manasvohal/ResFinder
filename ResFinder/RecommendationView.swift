@@ -16,7 +16,7 @@ struct RecommendationView: View {
             if vm.isLoading {
                 Spacer()
                 ProgressView("Finding best matches…")
-                    .progressViewStyle(CircularProgressViewStyle(tint: .red))
+                    .progressViewStyle(CircularProgressViewStyle(tint: .black))
                 Spacer()
             } else {
                 List {
@@ -37,7 +37,7 @@ struct RecommendationView: View {
             Button(action: {
                 navigateToResearchAreas = true
             }) {
-                Text("Can’t see a good match? Select by Research Area")
+                Text("Can't see a good match? Select by Research Area")
                     .font(.subheadline)
                     .padding()
                     .frame(maxWidth: .infinity)
@@ -62,4 +62,3 @@ struct RecommendationView: View {
         .navigationBarHidden(true)
     }
 }
-

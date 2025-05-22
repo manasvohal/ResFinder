@@ -55,7 +55,7 @@ struct FollowUpEmailView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
-                // Header with red background
+                // Header with black background
                 HStack {
                     Button(action: {
                         presentationMode.wrappedValue.dismiss()
@@ -85,7 +85,7 @@ struct FollowUpEmailView: View {
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 16)
-                .background(Color.red)
+                .background(Color.black)
                 
                 VStack(spacing: 20) {
                     // Original email info
@@ -105,7 +105,7 @@ struct FollowUpEmailView: View {
                             
                             HStack {
                                 Image(systemName: "info.circle")
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(.black)
                                 Text("Need the professor's email? Find it on their website:")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
@@ -114,24 +114,24 @@ struct FollowUpEmailView: View {
                             Link(destination: bestWebsiteUrl) {
                                 HStack {
                                     Image(systemName: "globe")
-                                        .foregroundColor(.blue)
+                                        .foregroundColor(.black)
                                     
                                     if outreachRecord.profileUrl != nil || professorDetails != nil {
                                         Text("Visit \(outreachRecord.professorName)'s Website")
-                                            .foregroundColor(.blue)
+                                            .foregroundColor(.black)
                                             .underline()
                                     } else {
                                         Text("Search for \(outreachRecord.professorName)")
-                                            .foregroundColor(.blue)
+                                            .foregroundColor(.black)
                                             .underline()
                                     }
                                     
                                     Spacer()
                                     Image(systemName: "arrow.up.right.square")
-                                        .foregroundColor(.blue)
+                                        .foregroundColor(.black)
                                 }
                                 .padding(10)
-                                .background(Color.blue.opacity(0.1))
+                                .background(Color.black.opacity(0.1))
                                 .cornerRadius(8)
                             }
                         }
@@ -158,7 +158,7 @@ struct FollowUpEmailView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("To")
                                 .font(.headline)
-                                .foregroundColor(.red)
+                                .foregroundColor(.black)
                             
                             TextField("professor@university.edu", text: $recipient)
                                 .padding()
@@ -171,7 +171,7 @@ struct FollowUpEmailView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Subject")
                                 .font(.headline)
-                                .foregroundColor(.red)
+                                .foregroundColor(.black)
                             
                             TextField("Re: Research Inquiry", text: $subject)
                                 .padding()
@@ -184,14 +184,14 @@ struct FollowUpEmailView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Message")
                                 .font(.headline)
-                                .foregroundColor(.red)
+                                .foregroundColor(.black)
                             
                             if isGenerating {
                                 HStack {
                                     Spacer()
                                     VStack {
                                         ProgressView()
-                                            .progressViewStyle(CircularProgressViewStyle(tint: .red))
+                                            .progressViewStyle(CircularProgressViewStyle(tint: .black))
                                         Text("Generating follow-up email...")
                                             .font(.caption)
                                             .foregroundColor(.secondary)
@@ -233,7 +233,7 @@ struct FollowUpEmailView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
-                            .background(isGenerating ? Color.gray : Color.orange)
+                            .background(isGenerating ? Color.gray : Color.black)
                             .cornerRadius(10)
                         }
                         .disabled(isGenerating)
@@ -259,7 +259,7 @@ struct FollowUpEmailView: View {
                             .background(
                                 recipient.isEmpty || subject.isEmpty || bodyText.isEmpty || !canSendFollowUp
                                 ? Color.gray
-                                : Color.blue
+                                : Color.black
                             )
                             .cornerRadius(10)
                         }

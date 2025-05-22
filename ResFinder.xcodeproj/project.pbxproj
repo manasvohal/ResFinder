@@ -42,6 +42,9 @@
 		E90694582DC9ADB000324117 /* LandingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90694572DC9ADB000324117 /* LandingView.swift */; };
 		E973D4A42DD3C8AC00300E7A /* RecommendationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E973D4A32DD3C88C00300E7A /* RecommendationViewModel.swift */; };
 		E973D4A62DD3C8C800300E7A /* RecommendationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E973D4A52DD3C8C600300E7A /* RecommendationView.swift */; };
+		E973D4AE2DDE98FD00300E7A /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E973D4AD2DDE98FC00300E7A /* AppTheme.swift */; };
+		E973D4B02DDE991600300E7A /* UIComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = E973D4AF2DDE991500300E7A /* UIComponents.swift */; };
+		E973D4B22DDE993600300E7A /* TypingTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E973D4B12DDE992F00300E7A /* TypingTextView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -97,6 +100,9 @@
 		E90694572DC9ADB000324117 /* LandingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandingView.swift; sourceTree = "<group>"; };
 		E973D4A32DD3C88C00300E7A /* RecommendationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendationViewModel.swift; sourceTree = "<group>"; };
 		E973D4A52DD3C8C600300E7A /* RecommendationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendationView.swift; sourceTree = "<group>"; };
+		E973D4AD2DDE98FC00300E7A /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
+		E973D4AF2DDE991500300E7A /* UIComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIComponents.swift; sourceTree = "<group>"; };
+		E973D4B12DDE992F00300E7A /* TypingTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypingTextView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -152,22 +158,25 @@
 				E906942E2DC866C400324117 /* Info.plist */,
 				369618542DD01744004986F4 /* GoogleService-Info.plist */,
 				3696185D2DD0186D004986F4 /* AppDelegate.swift */,
+				E973D4AD2DDE98FC00300E7A /* AppTheme.swift */,
+				E973D4AF2DDE991500300E7A /* UIComponents.swift */,
+				E973D4B12DDE992F00300E7A /* TypingTextView.swift */,
+				E90694572DC9ADB000324117 /* LandingView.swift */,
+				369618632DD01937004986F4 /* AuthViews.swift */,
+				369618522DCEADBC004986F4 /* ResumeUploadView.swift */,
+				E90694062DC8633F00324117 /* ContentView.swift */,
+				369618672DD0196E004986F4 /* ProfileView.swift */,
+				369618692DD019A0004986F4 /* FollowUpEmail.swift */,
+				E973D4A52DD3C8C600300E7A /* RecommendationView.swift */,
 				E973D4A32DD3C88C00300E7A /* RecommendationViewModel.swift */,
 				36E3E3D12DD91B68007FF139 /* NotificationManager.swift */,
-				E973D4A52DD3C8C600300E7A /* RecommendationView.swift */,
 				3696185F2DD018E5004986F4 /* FirebaseService.swift */,
 				3696186D2DD02196004986F4 /* CommonNavigationHeader.swift */,
 				3696186F2DD024A9004986F4 /* ProfileButton.swift */,
 				E90694042DC8633F00324117 /* ResFinderApp.swift */,
 				369618612DD01918004986F4 /* AuthViewModel.swift */,
-				369618632DD01937004986F4 /* AuthViews.swift */,
 				369618652DD01957004986F4 /* OutreachViewModel.swift */,
 				369618712DD12E86004986F4 /* EnhancedOutreachRecordRow.swift */,
-				369618672DD0196E004986F4 /* ProfileView.swift */,
-				369618692DD019A0004986F4 /* FollowUpEmail.swift */,
-				E90694062DC8633F00324117 /* ContentView.swift */,
-				E90694572DC9ADB000324117 /* LandingView.swift */,
-				369618522DCEADBC004986F4 /* ResumeUploadView.swift */,
 				E90694552DC92EEF00324117 /* ResearchAreasSelectionView.swift */,
 				E90694372DC86ECF00324117 /* ProfessorsListView.swift */,
 				369618732DD13B88004986F4 /* ComposeEmailView.swift */,
@@ -350,6 +359,7 @@
 				369618722DD12E88004986F4 /* EnhancedOutreachRecordRow.swift in Sources */,
 				E90694382DC86ECF00324117 /* ProfessorsListView.swift in Sources */,
 				E906943A2DC875E400324117 /* DetailView.swift in Sources */,
+				E973D4AE2DDE98FD00300E7A /* AppTheme.swift in Sources */,
 				369618702DD024AC004986F4 /* ProfileButton.swift in Sources */,
 				E90694072DC8633F00324117 /* ContentView.swift in Sources */,
 				369618602DD018F1004986F4 /* FirebaseService.swift in Sources */,
@@ -365,12 +375,14 @@
 				369618682DD01970004986F4 /* ProfileView.swift in Sources */,
 				E90694582DC9ADB000324117 /* LandingView.swift in Sources */,
 				369618642DD0193A004986F4 /* AuthViews.swift in Sources */,
+				E973D4B02DDE991600300E7A /* UIComponents.swift in Sources */,
 				3696185E2DD01874004986F4 /* AppDelegate.swift in Sources */,
 				E90694052DC8633F00324117 /* ResFinderApp.swift in Sources */,
 				E90694542DC92C4800324117 /* OpenRouterService.swift in Sources */,
 				3696186E2DD0219B004986F4 /* CommonNavigationHeader.swift in Sources */,
 				36E3E3D22DD91B76007FF139 /* NotificationManager.swift in Sources */,
 				369618512DCD751B004986F4 /* ProfessorsViewModel.swift in Sources */,
+				E973D4B22DDE993600300E7A /* TypingTextView.swift in Sources */,
 				E90694342DC867AC00324117 /* APIClient.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -535,7 +547,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ResFinder/Preview Content\"";
-				DEVELOPMENT_TEAM = UX582669PA;
+				DEVELOPMENT_TEAM = 767Z953J7F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ResFinder/Info.plist;
@@ -566,7 +578,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ResFinder/Preview Content\"";
-				DEVELOPMENT_TEAM = UX582669PA;
+				DEVELOPMENT_TEAM = 767Z953J7F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ResFinder/Info.plist;

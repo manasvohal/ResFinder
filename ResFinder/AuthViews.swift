@@ -1,75 +1,41 @@
 import SwiftUI
 
+import SwiftUI
+
 struct AuthContainerView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @State private var showingLogin = true
     @State private var showResumeUpload = false
     @State private var showSchoolSelection = false
-    @State private var debugMessage = "Waiting for auth..."
-    
+
     var body: some View {
-        VStack(spacing: 0) {
-            // Red header bar
-            HStack {
-                Text(showingLogin ? "Sign In" : "Create Account")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                
+        ZStack {
+            Color.white.ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                // Header
+                HStack {
+                    Text(showingLogin ? "Sign In" : "Create Account")
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                    Spacer()
+                }
+                .padding()
+                .background(Color.black)
+
+                // Form
+                if showingLogin {
+                    LoginView(showSignUp: $showingLogin)
+                        .environmentObject(authViewModel)
+                } else {
+                    SignUpView(showLogin: $showingLogin)
+                        .environmentObject(authViewModel)
+                }
+
                 Spacer()
-                
-                // Debug info - remove in production
-                if debugMessage != "Waiting for auth..." {
-                    Text(debugMessage)
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.8))
-                }
-            }
-            .padding(.horizontal)
-            .padding(.vertical, 16)
-            .background(Color.red)
-            
-            if showingLogin {
-                LoginView(showSignUp: $showingLogin)
-                    .environmentObject(authViewModel)
-            } else {
-                SignUpView(showSignIn: $showingLogin)
-                    .environmentObject(authViewModel)
-            }
-            
-            // Debug controls - remove in production
-            HStack {
-                Text("Auth: \(authViewModel.isAuthenticated ? "Yes" : "No")")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
-                Spacer()
-                
-                if authViewModel.isAuthenticated {
-                    Button("Manual Continue") {
-                        showResumeUpload = true
-                    }
-                    .font(.caption)
-                    .padding(6)
-                    .background(Color.green.opacity(0.2))
-                    .cornerRadius(4)
-                }
-            }
-            .padding(.horizontal)
-            .padding(.bottom, 8)
-        }
-        .onReceive(authViewModel.$isAuthenticated) { isAuthenticated in
-            self.debugMessage = isAuthenticated ? "Authenticated ✓" : "Not authenticated"
-            print("AuthContainerView: isAuthenticated changed to \(isAuthenticated)")
-            
-            if isAuthenticated {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    showResumeUpload = true
-                }
             }
         }
         .fullScreenCover(isPresented: $showResumeUpload) {
-            // After resume upload, we'll navigate to the school selection
             ResumeUploadView(
                 isSheet: false,
                 onComplete: {
@@ -86,239 +52,248 @@ struct AuthContainerView: View {
                     .environmentObject(authViewModel)
             }
         }
-    }
-}
-
-struct LoginView: View {
-    @EnvironmentObject var authViewModel: AuthViewModel
-    @State private var email = ""
-    @State private var password = ""
-    @Binding var showSignUp: Bool
-    @State private var authState = "Not authenticated"
-    
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                // Form fields
-                VStack(spacing: 20) {
-                    TextField("Email", text: $email)
-                        .keyboardType(.emailAddress)
-                        .autocapitalization(.none)
-                        .disableAutocorrection(true)
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(10)
-                    
-                    SecureField("Password", text: $password)
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(10)
-                    
-                    if let error = authViewModel.authError {
-                        Text(error)
-                            .font(.caption)
-                            .foregroundColor(.red)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                    }
-                    
-                    // Debug auth state info - can remove after fixing
-                    Text("Auth State: \(authState)")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.horizontal)
-                
-                // Buttons
-                VStack(spacing: 15) {
-                    Button(action: {
-                        authViewModel.signIn(email: email, password: password)
-                    }) {
-                        HStack {
-                            Text("Sign In")
-                                .fontWeight(.semibold)
-                            
-                            if authViewModel.isLoading {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                    .padding(.leading, 4)
-                            }
-                        }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.red)
-                        .cornerRadius(10)
-                    }
-                    .disabled(email.isEmpty || password.isEmpty || authViewModel.isLoading)
-                    .opacity(email.isEmpty || password.isEmpty || authViewModel.isLoading ? 0.6 : 1)
-                    
-                    Button(action: {
-                        showSignUp = false
-                    }) {
-                        Text("Don't have an account? Sign Up")
-                            .font(.subheadline)
-                            .foregroundColor(.red)
-                    }
-                }
-                .padding(.horizontal)
-                
-                Spacer()
-            }
-            .padding(.top, 40)
-            .onReceive(authViewModel.$isAuthenticated) { isAuthenticated in
-                self.authState = isAuthenticated ? "Authenticated" : "Not authenticated"
-                print("LoginView: Auth state changed to \(isAuthenticated)")
+        .onReceive(authViewModel.$isAuthenticated) { isAuth in
+            if isAuth {
+                showResumeUpload = true
             }
         }
     }
 }
 
+// MARK: - Styled Login
+struct LoginView: View {
+    @EnvironmentObject var authViewModel: AuthViewModel
+    @Binding var showSignUp: Bool
+    @State private var email = ""
+    @State private var password = ""
+    @State private var errorMessage: String?
+    @FocusState private var focusedField: Field?
+
+    enum Field { case email, password }
+
+    var body: some View {
+        VStack(spacing: 32) {
+            VStack(spacing: 16) {
+                // Email field
+                HStack {
+                    Image(systemName: "envelope")
+                        .foregroundColor(focusedField == .email ? .black : .black.opacity(0.6))
+                    TextField("Email", text: $email)
+                        .foregroundColor(.black)
+                        .keyboardType(.emailAddress)
+                        .autocapitalization(.none)
+                        .focused($focusedField, equals: .email)
+                }
+                .padding(12)
+                .background(Color.black.opacity(0.05))
+                .cornerRadius(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(focusedField == .email ? Color.black : Color.black.opacity(0.2), lineWidth: 1)
+                )
+
+                // Password field
+                HStack {
+                    Image(systemName: "lock")
+                        .foregroundColor(focusedField == .password ? .black : .black.opacity(0.6))
+                    SecureField("Password", text: $password)
+                        .foregroundColor(.black)
+                        .focused($focusedField, equals: .password)
+                }
+                .padding(12)
+                .background(Color.black.opacity(0.05))
+                .cornerRadius(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(focusedField == .password ? Color.black : Color.black.opacity(0.2), lineWidth: 1)
+                )
+
+                if let error = errorMessage {
+                    Text(error)
+                        .font(.caption)
+                        .foregroundColor(.red)
+                }
+            }
+            .padding(.horizontal, 32)
+
+            VStack(spacing: 16) {
+                Button(action: signIn) {
+                    Text("Sign In")
+                        .font(.system(size: 18, weight: .semibold, design: .rounded))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity, minHeight: 50)
+                        .background(Color.black)
+                        .cornerRadius(25)
+                }
+                .disabled(email.isEmpty || password.isEmpty)
+
+                Button(action: { showSignUp = false }) {
+                    Text("Don't have an account? Sign Up")
+                        .font(.system(size: 14, design: .rounded))
+                        .foregroundColor(.black.opacity(0.8))
+                }
+            }
+            .padding(.horizontal, 32)
+        }
+        .padding(.top, 40)
+    }
+
+    private func signIn() {
+        authViewModel.signIn(email: email, password: password)
+        // Listen for errors
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            if let err = authViewModel.authError {
+                errorMessage = err
+            }
+        }
+    }
+}
+
+// MARK: - Styled SignUp
 struct SignUpView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
+    @Binding var showLogin: Bool
     @State private var email = ""
     @State private var password = ""
     @State private var confirmPassword = ""
-    @State private var passwordMismatch = false
     @State private var name = ""
     @State private var major = ""
     @State private var year = ""
-    @Binding var showSignIn: Bool
-    
-    // Year options
-    let yearOptions = ["Freshman", "Sophomore", "Junior", "Senior", "Graduate Student", "PhD Student"]
-    
+    @State private var errorMessage: String?
+    @FocusState private var focusedField: Field?
+
+    enum Field { case email, password, confirm }
+    let yearOptions = ["Freshman","Sophomore","Junior","Senior","Graduate","PhD"]
+
     var body: some View {
         ScrollView {
-            VStack(spacing: 20) {
-                // Form fields
-                VStack(spacing: 20) {
-                    // Account Information Section
-                    Group {
-                        Text("Account Information")
-                            .font(.headline)
-                            .foregroundColor(.red)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        
+            VStack(spacing: 24) {
+                VStack(spacing: 16) {
+                    // Email
+                    HStack {
+                        Image(systemName: "envelope")
+                            .foregroundColor(focusedField == .email ? .black : .black.opacity(0.6))
                         TextField("Email", text: $email)
+                            .foregroundColor(.black)
                             .keyboardType(.emailAddress)
                             .autocapitalization(.none)
-                            .disableAutocorrection(true)
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .cornerRadius(10)
-                        
+                            .focused($focusedField, equals: .email)
+                    }
+                    .fieldStyle(focused: focusedField == .email)
+
+                    // Password
+                    HStack {
+                        Image(systemName: "lock")
+                            .foregroundColor(focusedField == .password ? .black : .black.opacity(0.6))
                         SecureField("Password", text: $password)
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .cornerRadius(10)
-                        
+                            .foregroundColor(.black)
+                            .focused($focusedField, equals: .password)
+                    }
+                    .fieldStyle(focused: focusedField == .password)
+
+                    // Confirm
+                    HStack {
+                        Image(systemName: "lock.rotation")
+                            .foregroundColor(focusedField == .confirm ? .black : .black.opacity(0.6))
                         SecureField("Confirm Password", text: $confirmPassword)
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .cornerRadius(10)
+                            .foregroundColor(.black)
+                            .focused($focusedField, equals: .confirm)
                     }
-                    
-                    // Personal Information Section
-                    Group {
-                        Text("Personal Information")
-                            .font(.headline)
-                            .foregroundColor(.red)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.top, 10)
-                        
-                        TextField("Full Name", text: $name)
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .cornerRadius(10)
-                        
-                        TextField("Major (e.g., Computer Science)", text: $major)
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .cornerRadius(10)
-                        
-                        Picker("Academic Year", selection: $year) {
-                            Text("Select Year").tag("")
-                            ForEach(yearOptions, id: \.self) { year in
-                                Text(year).tag(year)
-                            }
-                        }
-                        .pickerStyle(MenuPickerStyle())
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(10)
+                    .fieldStyle(focused: focusedField == .confirm)
+
+                    // Name
+                    TextField("Full Name", text: $name)
+                        .padding(12)
+                        .background(Color.black.opacity(0.05))
+                        .cornerRadius(12)
+                        .foregroundColor(.black)
+
+                    // Major
+                    TextField("Major", text: $major)
+                        .padding(12)
+                        .background(Color.black.opacity(0.05))
+                        .cornerRadius(12)
+                        .foregroundColor(.black)
+
+                    // Year
+                    Picker("Year", selection: $year) {
+                        ForEach(yearOptions, id: \ .self) { Text($0) }
                     }
-                    
-                    if passwordMismatch {
+                    .padding(12)
+                    .background(Color.black.opacity(0.05))
+                    .cornerRadius(12)
+
+                    // Validation
+                    if !passwordsMatch {
                         Text("Passwords do not match")
                             .font(.caption)
                             .foregroundColor(.red)
                     }
-                    
-                    if let error = authViewModel.authError {
-                        Text(error)
+                    if let err = errorMessage {
+                        Text(err)
                             .font(.caption)
                             .foregroundColor(.red)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
                     }
                 }
-                .padding(.horizontal)
-                
-                // Buttons
-                VStack(spacing: 15) {
-                    Button(action: {
-                        if password == confirmPassword {
-                            passwordMismatch = false
-                            
-                            // Save the user information to UserDefaults first
-                            UserDefaults.standard.set(name, forKey: "userName")
-                            UserDefaults.standard.set(major, forKey: "userMajor")
-                            UserDefaults.standard.set(year, forKey: "userYear")
-                            
-                            // Then create the account
-                            authViewModel.signUp(email: email, password: password)
-                        } else {
-                            passwordMismatch = true
-                        }
-                    }) {
-                        HStack {
-                            Text("Sign Up")
-                                .fontWeight(.semibold)
-                            
-                            if authViewModel.isLoading {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                    .padding(.leading, 4)
-                            }
-                        }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.red)
-                        .cornerRadius(10)
+                .padding(.horizontal, 32)
+
+                VStack(spacing: 16) {
+                    Button(action: signUp) {
+                        Text("Sign Up")
+                            .font(.system(size: 18, weight: .semibold, design: .rounded))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity, minHeight: 50)
+                            .background(Color.black)
+                            .cornerRadius(25)
                     }
-                    .disabled(isFormIncomplete || authViewModel.isLoading)
-                    .opacity(isFormIncomplete || authViewModel.isLoading ? 0.6 : 1)
-                    
-                    Button(action: {
-                        showSignIn = true
-                    }) {
+                    .disabled(!formComplete)
+
+                    Button(action: { showLogin = true }) {
                         Text("Already have an account? Sign In")
-                            .font(.subheadline)
-                            .foregroundColor(.red)
+                            .font(.system(size: 14, design: .rounded))
+                            .foregroundColor(.black.opacity(0.8))
                     }
                 }
-                .padding(.horizontal)
-                
+                .padding(.horizontal, 32)
+
                 Spacer()
             }
-            .padding(.top, 20)
+            .padding(.top, 40)
         }
     }
-    
-    private var isFormIncomplete: Bool {
-        email.isEmpty || password.isEmpty || confirmPassword.isEmpty ||
-        name.isEmpty || major.isEmpty || year.isEmpty
+
+    // MARK: - Helpers
+    private var passwordsMatch: Bool { !password.isEmpty && password == confirmPassword }
+    private var formComplete: Bool {
+        !email.isEmpty && passwordsMatch && !name.isEmpty && !major.isEmpty && !year.isEmpty
+    }
+
+    private func signUp() {
+        guard passwordsMatch else { return }
+        // Store extras
+        UserDefaults.standard.set(name, forKey: "userName")
+        UserDefaults.standard.set(major, forKey: "userMajor")
+        UserDefaults.standard.set(year, forKey: "userYear")
+
+        authViewModel.signUp(email: email, password: password)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            if let err = authViewModel.authError {
+                errorMessage = err
+            }
+        }
     }
 }
+
+// MARK: - Field Style Modifier
+fileprivate extension View {
+    func fieldStyle(focused: Bool) -> some View {
+        self
+            .padding(12)
+            .background(Color.black.opacity(0.05))
+            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(focused ? Color.black : Color.black.opacity(0.2), lineWidth: 1)
+            )
+    }
+} 

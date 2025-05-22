@@ -21,20 +21,20 @@ struct ProfileView: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
-                        .background(Color.red)
+                        .background(Color.black)
 
                     if authViewModel.isAuthenticated {
                         // Account Section
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Account")
                                 .font(.headline)
-                                .foregroundColor(.red)
+                                .foregroundColor(.black)
                                 .padding(.horizontal, 16)
 
                             HStack(spacing: 16) {
                                 ZStack {
                                     Circle()
-                                        .fill(Color.red)
+                                        .fill(Color.black)
                                         .frame(width: 60, height: 60)
                                     Text(getFirstLetter(of: authViewModel.user?.email ?? ""))
                                         .font(.system(size: 30, weight: .bold))
@@ -61,7 +61,7 @@ struct ProfileView: View {
                                         .foregroundColor(.white)
                                         .padding(.horizontal, 16)
                                         .padding(.vertical, 8)
-                                        .background(Color.red)
+                                        .background(Color.black)
                                         .cornerRadius(10)
                                 }
                             }
@@ -80,7 +80,7 @@ struct ProfileView: View {
                             HStack {
                                 Text("Professor Outreach")
                                     .font(.headline)
-                                    .foregroundColor(.red)
+                                    .foregroundColor(.black)
                                 Spacer()
                                 Text("\(outreachViewModel.outreachRecords.count) contacts")
                                     .font(.caption)
@@ -98,7 +98,7 @@ struct ProfileView: View {
                                 HStack {
                                     Spacer()
                                     ProgressView("Loading your outreach history...")
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .red))
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .black))
                                         .padding()
                                     Spacer()
                                 }
@@ -152,7 +152,7 @@ struct ProfileView: View {
                             Spacer().frame(height: 40)
                             Image(systemName: "person.badge.shield.checkmark")
                                 .font(.system(size: 70))
-                                .foregroundColor(.red.opacity(0.8))
+                                .foregroundColor(.black.opacity(0.8))
                                 .padding(.bottom, 16)
                             Text("Sign in to Track Your Outreach")
                                 .font(.title3)
@@ -172,7 +172,7 @@ struct ProfileView: View {
                                     .foregroundColor(.white)
                                     .frame(width: 200)
                                     .padding()
-                                    .background(Color.red)
+                                    .background(Color.black)
                                     .cornerRadius(10)
                             }
                             .padding(.top, 8)
