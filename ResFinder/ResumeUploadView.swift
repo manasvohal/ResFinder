@@ -6,7 +6,7 @@ struct ResumeUploadView: View {
     var destinationView: AnyView? = nil
     var isSheet: Bool = false
     var onComplete: (() -> Void)? = nil
-    
+
     @State private var showingDocumentPicker = false
     @State private var resumeFileName: String?
     @State private var resumeFileURL: URL?
@@ -14,20 +14,20 @@ struct ResumeUploadView: View {
     @State private var alertMessage = ""
     @State private var isNavigationActive = false
     @State private var resumeText = ""
-    
+
     @AppStorage("resumeText") private var savedResumeText = ""
     @AppStorage("resumeFileName") private var savedResumeFileName = ""
     @AppStorage("hasUploadedResume") private var hasUploadedResume = false
-    
+
     @EnvironmentObject var authViewModel: AuthViewModel
     @Environment(\.presentationMode) var presentationMode
-    
+
     var body: some View {
         NavigationView {
             ZStack {
                 AppTheme.Colors.background
                     .ignoresSafeArea()
-                
+
                 VStack(spacing: 0) {
                     // Header
                     HStack {
@@ -46,40 +46,42 @@ struct ResumeUploadView: View {
                             Color.clear
                                 .frame(width: 44, height: 44)
                         }
-                        
+
                         Spacer()
-                        
+
                         Text(isSheet ? "Update Resume" : "Upload Resume")
                             .font(AppTheme.Typography.title2)
                             .foregroundColor(AppTheme.Colors.primaryText)
-                        
+
                         Spacer()
-                        
+
                         Color.clear
                             .frame(width: 44, height: 44)
                     }
                     .padding(.horizontal, AppTheme.Spacing.small)
                     .padding(.vertical, AppTheme.Spacing.small)
-                    
+
                     ScrollView {
                         VStack(spacing: AppTheme.Spacing.large) {
                             // Upload section
                             VStack(spacing: AppTheme.Spacing.medium) {
-                                // File upload area
+                                // Icon and file name
                                 VStack(spacing: AppTheme.Spacing.medium) {
-                                    // Icon
                                     ZStack {
                                         Circle()
                                             .fill(AppTheme.Colors.buttonSecondary)
                                             .frame(width: 120, height: 120)
-                                        
-                                        Image(systemName: resumeFileName != nil || !savedResumeFileName.isEmpty ? "doc.fill" : "doc.badge.plus")
-                                            .font(.system(size: 50))
-                                            .foregroundColor(AppTheme.Colors.primaryText)
+
+                                        Image(systemName:
+                                            (resumeFileName != nil || !savedResumeFileName.isEmpty)
+                                            ? "doc.fill" : "doc.badge.plus"
+                                        )
+                                        .font(.system(size: 50))
+                                        .foregroundColor(AppTheme.Colors.primaryText)
                                     }
-                                    
-                                    // File name or upload prompt
-                                    if let fileName = resumeFileName ?? (savedResumeFileName.isEmpty ? nil : savedResumeFileName) {
+
+                                    if let fileName = resumeFileName
+                                        ?? (savedResumeFileName.isEmpty ? nil : savedResumeFileName) {
                                         Text(fileName)
                                             .font(AppTheme.Typography.headline)
                                             .foregroundColor(AppTheme.Colors.primaryText)
@@ -88,7 +90,6 @@ struct ResumeUploadView: View {
                                             Text("No resume uploaded")
                                                 .font(AppTheme.Typography.headline)
                                                 .foregroundColor(AppTheme.Colors.primaryText)
-                                            
                                             Text("Upload a PDF to get personalized recommendations")
                                                 .font(AppTheme.Typography.caption)
                                                 .foregroundColor(AppTheme.Colors.secondaryText)
@@ -97,24 +98,26 @@ struct ResumeUploadView: View {
                                     }
                                 }
                                 .padding(.vertical, AppTheme.Spacing.xLarge)
-                                
-                                // Upload/Change button
-                                Button(action: {
+
+                                // Change / Upload button
+                                Button {
                                     showingDocumentPicker = true
-                                }) {
-                                    Text(resumeFileName != nil || !savedResumeFileName.isEmpty ? "Change Resume" : "Upload PDF Resume")
-                                        .secondaryButton()
+                                } label: {
+                                    Text(
+                                        (resumeFileName != nil || !savedResumeFileName.isEmpty)
+                                        ? "Change Resume" : "Upload PDF Resume"
+                                    )
+                                    .secondaryButton()
                                 }
-                                
-                                // Action buttons
+
+                                // Save button
                                 VStack(spacing: AppTheme.Spacing.small) {
-                                    Button(action: {
+                                    Button {
                                         if resumeFileName != nil || !savedResumeFileName.isEmpty {
                                             saveUserInfo()
-                                            
                                             if let onComplete = onComplete {
                                                 onComplete()
-                                            } else if let _ = destinationView {
+                                            } else if destinationView != nil {
                                                 isNavigationActive = true
                                             } else {
                                                 presentationMode.wrappedValue.dismiss()
@@ -123,22 +126,17 @@ struct ResumeUploadView: View {
                                             alertMessage = "Please upload your resume."
                                             showingAlert = true
                                         }
-                                    }) {
+                                    } label: {
                                         Text(isSheet ? "Save Changes" : "Save Resume")
-                                            .primaryButton(isEnabled: resumeFileName != nil || !savedResumeFileName.isEmpty)
+                                            .primaryButton(
+                                                isEnabled: resumeFileName != nil
+                                                   || !savedResumeFileName.isEmpty
+                                            )
                                     }
-                                    .disabled(!(resumeFileName != nil || !savedResumeFileName.isEmpty))
-                                    
-                                    if isSheet {
-                                        Button(action: {
-                                            presentationMode.wrappedValue.dismiss()
-                                        }) {
-                                            Text("Cancel")
-                                                .font(AppTheme.Typography.headline)
-                                                .foregroundColor(AppTheme.Colors.accent)
-                                        }
-                                    }
+                                    .disabled(!(resumeFileName != nil
+                                        || !savedResumeFileName.isEmpty))
                                 }
+                                // ← “Cancel” button removed here
                             }
                             .padding(.horizontal, AppTheme.Spacing.large)
                         }
@@ -166,7 +164,6 @@ struct ResumeUploadView: View {
                 if resumeFileName == nil && !savedResumeFileName.isEmpty {
                     resumeFileName = savedResumeFileName
                 }
-                
                 if resumeText.isEmpty && !savedResumeText.isEmpty {
                     resumeText = savedResumeText
                 }
@@ -186,94 +183,66 @@ struct ResumeUploadView: View {
         }
         .navigationViewStyle(StackNavigationViewStyle())
     }
-    
+
     private func saveUserInfo() {
         if let fileName = resumeFileName {
             savedResumeFileName = fileName
         }
-        
         if !resumeText.isEmpty {
             savedResumeText = resumeText
         }
-        
         hasUploadedResume = true
     }
 }
 
-// Document Picker remains the same
+// DocumentPicker remains unchanged
 struct DocumentPicker: UIViewControllerRepresentable {
     @Binding var fileURL: URL?
     @Binding var fileName: String?
     @Binding var resumeText: String
-    
+
     func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
         let picker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.pdf])
         picker.allowsMultipleSelection = false
         picker.delegate = context.coordinator
         return picker
     }
-    
+
     func updateUIViewController(_ uiViewController: UIDocumentPickerViewController, context: Context) {}
     
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
-    
+    func makeCoordinator() -> Coordinator { Coordinator(self) }
+
     class Coordinator: NSObject, UIDocumentPickerDelegate {
         var parent: DocumentPicker
-        
-        init(_ parent: DocumentPicker) {
-            self.parent = parent
-        }
-        
+        init(_ parent: DocumentPicker) { self.parent = parent }
         func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
             guard let url = urls.first else { return }
-            
-            let didStartAccessing = url.startAccessingSecurityScopedResource()
-            defer {
-                if didStartAccessing {
-                    url.stopAccessingSecurityScopedResource()
-                }
-            }
-            
+            let started = url.startAccessingSecurityScopedResource()
+            defer { if started { url.stopAccessingSecurityScopedResource() } }
             parent.fileName = url.lastPathComponent
             parent.fileURL = url
-            
             extractTextFromPDF(url: url)
         }
-        
         private func extractTextFromPDF(url: URL) {
-            guard let pdfDocument = PDFDocument(url: url) else {
-                print("Failed to create PDF document from URL")
-                parent.resumeText = "Could not extract text from PDF. Please ensure it's a valid PDF file."
+            guard let doc = PDFDocument(url: url) else {
+                parent.resumeText = "Could not extract text from PDF."
                 return
             }
-            
-            var extractedText = ""
-            
-            for pageIndex in 0..<pdfDocument.pageCount {
-                guard let page = pdfDocument.page(at: pageIndex) else { continue }
-                
-                if let pageText = page.string {
-                    extractedText += pageText + "\n"
+            var text = ""
+            for i in 0..<doc.pageCount {
+                if let page = doc.page(at: i), let s = page.string {
+                    text += s + "\n"
                 }
             }
-            
-            if extractedText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                parent.resumeText = "The PDF appears to be a scanned document without machine-readable text. Please upload a PDF with extractable text."
+            if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                parent.resumeText = "Scanned PDF—no extractable text."
                 return
             }
-            
-            extractedText = extractedText.replacingOccurrences(of: "\n\n+", with: "\n\n", options: .regularExpression)
-            
-            let maxCharacters = 4000
-            if extractedText.count > maxCharacters {
-                extractedText = String(extractedText.prefix(maxCharacters)) + "\n\n[Text truncated due to length]"
+            text = text.replacingOccurrences(of: "\n\n+", with: "\n\n", options: .regularExpression)
+            if text.count > 4000 {
+                text = String(text.prefix(4000)) + "\n\n[Truncated]"
             }
-            
-            parent.resumeText = extractedText
-            
-            print("Successfully extracted \(extractedText.count) characters from PDF")
+            parent.resumeText = text
         }
     }
 }

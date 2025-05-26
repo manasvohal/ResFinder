@@ -6,42 +6,35 @@ struct AuthContainerView: View {
     @State private var showResumeUpload = false
     @State private var showSchoolSelection = false
     @Environment(\.presentationMode) var presentationMode
-    
+
     var body: some View {
         NavigationView {
             ZStack {
                 AppTheme.Colors.background
                     .ignoresSafeArea()
-                
+
                 VStack(spacing: 0) {
-                    // Header
+                    // Header (removed the X button)
                     HStack {
-                        Button(action: {
-                            presentationMode.wrappedValue.dismiss()
-                        }) {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 18, weight: .medium))
-                                .foregroundColor(AppTheme.Colors.primaryText)
-                                .frame(width: 44, height: 44)
-                                .background(AppTheme.Colors.buttonSecondary)
-                                .clipShape(Circle())
-                        }
-                        
+                        // Leading spacer to center title
+                        Color.clear
+                            .frame(width: 44, height: 44)
+
                         Spacer()
-                        
+
                         Text(showingLogin ? "Sign In" : "Create Account")
                             .font(AppTheme.Typography.title2)
                             .foregroundColor(AppTheme.Colors.primaryText)
-                        
+
                         Spacer()
-                        
-                        // Invisible placeholder for balance
+
+                        // Invisible placeholder
                         Color.clear
                             .frame(width: 44, height: 44)
                     }
                     .padding(.horizontal, AppTheme.Spacing.small)
                     .padding(.vertical, AppTheme.Spacing.small)
-                    
+
                     if showingLogin {
                         LoginView(showSignUp: $showingLogin)
                             .environmentObject(authViewModel)
@@ -86,25 +79,21 @@ struct LoginView: View {
     @State private var email = ""
     @State private var password = ""
     @Binding var showSignUp: Bool
-    
+
     var body: some View {
         ScrollView {
             VStack(spacing: AppTheme.Spacing.large) {
-                // Logo or illustration
                 Image(systemName: "person.circle.fill")
                     .font(.system(size: 80))
                     .foregroundColor(AppTheme.Colors.accent)
                     .padding(.top, AppTheme.Spacing.xxLarge)
                     .padding(.bottom, AppTheme.Spacing.large)
-                
-                // Form fields
+
                 VStack(spacing: AppTheme.Spacing.small) {
-                    // Email field
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.xxSmall) {
                         Text("Email")
                             .font(AppTheme.Typography.caption)
                             .foregroundColor(AppTheme.Colors.secondaryText)
-                        
                         TextField("", text: $email)
                             .placeholder(when: email.isEmpty) {
                                 Text("Enter your email")
@@ -118,13 +107,10 @@ struct LoginView: View {
                             .background(AppTheme.Colors.buttonSecondary)
                             .cornerRadius(AppTheme.CornerRadius.medium)
                     }
-                    
-                    // Password field
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.xxSmall) {
                         Text("Password")
                             .font(AppTheme.Typography.caption)
                             .foregroundColor(AppTheme.Colors.secondaryText)
-                        
                         SecureField("", text: $password)
                             .placeholder(when: password.isEmpty) {
                                 Text("Enter your password")
@@ -135,7 +121,6 @@ struct LoginView: View {
                             .background(AppTheme.Colors.buttonSecondary)
                             .cornerRadius(AppTheme.CornerRadius.medium)
                     }
-                    
                     if let error = authViewModel.authError {
                         Text(error)
                             .font(AppTheme.Typography.caption)
@@ -145,15 +130,13 @@ struct LoginView: View {
                     }
                 }
                 .padding(.horizontal)
-                
-                // Buttons
+
                 VStack(spacing: AppTheme.Spacing.small) {
                     Button(action: {
                         authViewModel.signIn(email: email, password: password)
                     }) {
                         HStack {
                             Text("Sign In")
-                            
                             if authViewModel.isLoading {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.Colors.background))
@@ -164,7 +147,7 @@ struct LoginView: View {
                         .primaryButton(isEnabled: !email.isEmpty && !password.isEmpty && !authViewModel.isLoading)
                     }
                     .disabled(email.isEmpty || password.isEmpty || authViewModel.isLoading)
-                    
+
                     Button(action: {
                         showSignUp = false
                     }) {
@@ -176,7 +159,7 @@ struct LoginView: View {
                 }
                 .padding(.horizontal)
                 .padding(.top, AppTheme.Spacing.medium)
-                
+
                 Spacer(minLength: AppTheme.Spacing.xxLarge)
             }
         }
@@ -194,47 +177,39 @@ struct SignUpView: View {
     @State private var major = ""
     @State private var year = ""
     @Binding var showSignIn: Bool
-    
+
     let yearOptions = ["Freshman", "Sophomore", "Junior", "Senior", "Graduate Student", "PhD Student"]
-    
+
     var body: some View {
         ScrollView {
             VStack(spacing: AppTheme.Spacing.large) {
-                // Form fields
                 VStack(spacing: AppTheme.Spacing.medium) {
-                    // Account Information Section
+                    // Account Information
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.small) {
                         Text("Account Information")
                             .font(AppTheme.Typography.headline)
                             .foregroundColor(AppTheme.Colors.accent)
-                        
                         VStack(spacing: AppTheme.Spacing.small) {
                             CustomTextField(title: "Email", text: $email, placeholder: "Enter your email", keyboardType: .emailAddress)
                             CustomSecureField(title: "Password", text: $password, placeholder: "Create a password")
                             CustomSecureField(title: "Confirm Password", text: $confirmPassword, placeholder: "Confirm your password")
                         }
                     }
-                    
-                    // Personal Information Section
+                    // Personal Information
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.small) {
                         Text("Personal Information")
                             .font(AppTheme.Typography.headline)
                             .foregroundColor(AppTheme.Colors.accent)
-                        
                         VStack(spacing: AppTheme.Spacing.small) {
                             CustomTextField(title: "Full Name", text: $name, placeholder: "Enter your name")
                             CustomTextField(title: "Major", text: $major, placeholder: "e.g., Computer Science")
-                            
                             VStack(alignment: .leading, spacing: AppTheme.Spacing.xxSmall) {
                                 Text("Academic Year")
                                     .font(AppTheme.Typography.caption)
                                     .foregroundColor(AppTheme.Colors.secondaryText)
-                                
                                 Menu {
                                     ForEach(yearOptions, id: \.self) { yearOption in
-                                        Button(yearOption) {
-                                            year = yearOption
-                                        }
+                                        Button(yearOption) { year = yearOption }
                                     }
                                 } label: {
                                     HStack {
@@ -251,13 +226,11 @@ struct SignUpView: View {
                             }
                         }
                     }
-                    
                     if passwordMismatch {
                         Text("Passwords do not match")
                             .font(AppTheme.Typography.caption)
                             .foregroundColor(AppTheme.Colors.error)
                     }
-                    
                     if let error = authViewModel.authError {
                         Text(error)
                             .font(AppTheme.Typography.caption)
@@ -266,8 +239,7 @@ struct SignUpView: View {
                     }
                 }
                 .padding(.horizontal)
-                
-                // Buttons
+
                 VStack(spacing: AppTheme.Spacing.small) {
                     Button(action: {
                         if password == confirmPassword {
@@ -282,7 +254,6 @@ struct SignUpView: View {
                     }) {
                         HStack {
                             Text("Sign Up")
-                            
                             if authViewModel.isLoading {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.Colors.background))
@@ -293,7 +264,7 @@ struct SignUpView: View {
                         .primaryButton(isEnabled: !isFormIncomplete && !authViewModel.isLoading)
                     }
                     .disabled(isFormIncomplete || authViewModel.isLoading)
-                    
+
                     Button(action: {
                         showSignIn = true
                     }) {
@@ -305,33 +276,31 @@ struct SignUpView: View {
                 }
                 .padding(.horizontal)
                 .padding(.top, AppTheme.Spacing.medium)
-                
+
                 Spacer(minLength: AppTheme.Spacing.xxLarge)
             }
             .padding(.top, AppTheme.Spacing.medium)
         }
         .background(AppTheme.Colors.background)
     }
-    
+
     private var isFormIncomplete: Bool {
         email.isEmpty || password.isEmpty || confirmPassword.isEmpty ||
         name.isEmpty || major.isEmpty || year.isEmpty
     }
 }
 
-// MARK: - Custom Components
 struct CustomTextField: View {
     let title: String
     @Binding var text: String
     let placeholder: String
     var keyboardType: UIKeyboardType = .default
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xxSmall) {
             Text(title)
                 .font(AppTheme.Typography.caption)
                 .foregroundColor(AppTheme.Colors.secondaryText)
-            
             TextField("", text: $text)
                 .placeholder(when: text.isEmpty) {
                     Text(placeholder)
@@ -352,13 +321,12 @@ struct CustomSecureField: View {
     let title: String
     @Binding var text: String
     let placeholder: String
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xxSmall) {
             Text(title)
                 .font(AppTheme.Typography.caption)
                 .foregroundColor(AppTheme.Colors.secondaryText)
-            
             SecureField("", text: $text)
                 .placeholder(when: text.isEmpty) {
                     Text(placeholder)
@@ -372,16 +340,16 @@ struct CustomSecureField: View {
     }
 }
 
-// MARK: - View Extension for Placeholder
 extension View {
     func placeholder<Content: View>(
         when shouldShow: Bool,
         alignment: Alignment = .leading,
-        @ViewBuilder placeholder: () -> Content) -> some View {
-        
+        @ViewBuilder placeholder: () -> Content
+    ) -> some View {
         ZStack(alignment: alignment) {
             placeholder().opacity(shouldShow ? 1 : 0)
             self
         }
     }
 }
+
