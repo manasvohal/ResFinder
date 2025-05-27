@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>API_BASE_URL</key>
+	<string>https://api.reachsearch.net/api</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -21,7 +23,9 @@
 	</dict>
 	<key>OPENROUTER_KEY</key>
 	<string>$(OPENROUTER_KEY)</string>
-	<key>API_BASE_URL</key>
-	<string>http://facultyfinder-api-env.eba-isypts53.us-east-2.elasticbeanstalk.com/api</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 </dict>
 </plist>

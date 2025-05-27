@@ -109,6 +109,7 @@
 		E9B05E3B2DE5342E00654291 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		E9B05E3D2DE53B3200654291 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		E9B05E3F2DE53B6C00654291 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		E9CAF6722DE5489500A43840 /* ResFinder.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ResFinder.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -161,6 +162,7 @@
 		E90694032DC8633F00324117 /* ResFinder */ = {
 			isa = PBXGroup;
 			children = (
+				E9CAF6722DE5489500A43840 /* ResFinder.entitlements */,
 				E9B05E3D2DE53B3200654291 /* Debug.xcconfig */,
 				E9B05E3F2DE53B6C00654291 /* Release.xcconfig */,
 				E906942E2DC866C400324117 /* Info.plist */,
@@ -557,6 +559,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ResFinder/ResFinder.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ResFinder/Preview Content\"";
@@ -591,6 +594,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ResFinder/ResFinder.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ResFinder/Preview Content\"";
