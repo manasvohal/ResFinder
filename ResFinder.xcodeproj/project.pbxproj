@@ -45,7 +45,9 @@
 		E973D4A62DD3C8C800300E7A /* RecommendationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E973D4A52DD3C8C600300E7A /* RecommendationView.swift */; };
 		E973D4AE2DDE98FD00300E7A /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E973D4AD2DDE98FC00300E7A /* AppTheme.swift */; };
 		E973D4B02DDE991600300E7A /* UIComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = E973D4AF2DDE991500300E7A /* UIComponents.swift */; };
-		E973D4B22DDE993600300E7A /* TypingTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E973D4B12DDE992F00300E7A /* TypingTextView.swift */; };
+		E9B05E3C2DE5343000654291 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9B05E3B2DE5342E00654291 /* Config.swift */; };
+		E9B05E3E2DE53B4100654291 /* Debug.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = E9B05E3D2DE53B3200654291 /* Debug.xcconfig */; };
+		E9B05E402DE53B6F00654291 /* Release.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = E9B05E3F2DE53B6C00654291 /* Release.xcconfig */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -104,7 +106,9 @@
 		E973D4A52DD3C8C600300E7A /* RecommendationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendationView.swift; sourceTree = "<group>"; };
 		E973D4AD2DDE98FC00300E7A /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		E973D4AF2DDE991500300E7A /* UIComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIComponents.swift; sourceTree = "<group>"; };
-		E973D4B12DDE992F00300E7A /* TypingTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypingTextView.swift; sourceTree = "<group>"; };
+		E9B05E3B2DE5342E00654291 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
+		E9B05E3D2DE53B3200654291 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		E9B05E3F2DE53B6C00654291 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -157,13 +161,15 @@
 		E90694032DC8633F00324117 /* ResFinder */ = {
 			isa = PBXGroup;
 			children = (
+				E9B05E3D2DE53B3200654291 /* Debug.xcconfig */,
+				E9B05E3F2DE53B6C00654291 /* Release.xcconfig */,
 				E906942E2DC866C400324117 /* Info.plist */,
 				369618542DD01744004986F4 /* GoogleService-Info.plist */,
+				E9B05E3B2DE5342E00654291 /* Config.swift */,
 				3696185D2DD0186D004986F4 /* AppDelegate.swift */,
 				36B11BB22DDFF06A007BB1A2 /* SplashView.swift */,
 				E973D4AD2DDE98FC00300E7A /* AppTheme.swift */,
 				E973D4AF2DDE991500300E7A /* UIComponents.swift */,
-				E973D4B12DDE992F00300E7A /* TypingTextView.swift */,
 				E90694572DC9ADB000324117 /* LandingView.swift */,
 				369618632DD01937004986F4 /* AuthViews.swift */,
 				369618522DCEADBC004986F4 /* ResumeUploadView.swift */,
@@ -330,9 +336,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E9B05E3E2DE53B4100654291 /* Debug.xcconfig in Resources */,
 				E906940C2DC8634100324117 /* Preview Assets.xcassets in Resources */,
 				E90694092DC8634100324117 /* Assets.xcassets in Resources */,
 				369618562DD01744004986F4 /* GoogleService-Info.plist in Resources */,
+				E9B05E402DE53B6F00654291 /* Release.xcconfig in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -381,12 +389,12 @@
 				E973D4B02DDE991600300E7A /* UIComponents.swift in Sources */,
 				3696185E2DD01874004986F4 /* AppDelegate.swift in Sources */,
 				E90694052DC8633F00324117 /* ResFinderApp.swift in Sources */,
+				E9B05E3C2DE5343000654291 /* Config.swift in Sources */,
 				E90694542DC92C4800324117 /* OpenRouterService.swift in Sources */,
 				3696186E2DD0219B004986F4 /* CommonNavigationHeader.swift in Sources */,
 				36E3E3D22DD91B76007FF139 /* NotificationManager.swift in Sources */,
 				369618512DCD751B004986F4 /* ProfessorsViewModel.swift in Sources */,
 				36B11BB32DDFF06F007BB1A2 /* SplashView.swift in Sources */,
-				E973D4B22DDE993600300E7A /* TypingTextView.swift in Sources */,
 				E90694342DC867AC00324117 /* APIClient.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -545,6 +553,7 @@
 		};
 		E90694262DC8634100324117 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = E9B05E3D2DE53B3200654291 /* Debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -560,11 +569,13 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				OPENROUTER_KEY = "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";
 				"OTHER_SWIFT_FLAGS[arch=*]" = "-enable-experimental-feature AccessLevelOnImport";
 				PRODUCT_BUNDLE_IDENTIFIER = com.emailrun2.ResFinder;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -576,6 +587,7 @@
 		};
 		E90694272DC8634100324117 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = E9B05E3F2DE53B6C00654291 /* Release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -591,11 +603,13 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				OPENROUTER_KEY = "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";
 				"OTHER_SWIFT_FLAGS[arch=*]" = "-enable-experimental-feature AccessLevelOnImport";
 				PRODUCT_BUNDLE_IDENTIFIER = com.emailrun2.ResFinder;
 				PRODUCT_NAME = "$(TARGET_NAME)";

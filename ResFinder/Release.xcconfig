@@ -1,0 +1,4 @@
+// Release.xcconfig
+// Paste your real, production OpenRouter key here.
+
+OPENROUTER_KEY = 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
