@@ -1,4 +1,7 @@
+// ResFinder/ProfileView.swift
+
 import SwiftUI
+import FirebaseAuth
 
 struct ProfileView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
@@ -6,6 +9,8 @@ struct ProfileView: View {
     @State private var showingLoginSheet = false
     @State private var showSignUp = true
     @Environment(\.presentationMode) var presentationMode
+    @State private var showingDeleteAlert = false
+    @State private var deletionError: String?
 
     private let followUpThresholdDays = 0
 
@@ -14,7 +19,7 @@ struct ProfileView: View {
             ZStack {
                 AppTheme.Colors.background
                     .ignoresSafeArea()
-                
+
                 VStack(spacing: 0) {
                     // Header with back button
                     HStack {
@@ -28,26 +33,26 @@ struct ProfileView: View {
                                 .background(AppTheme.Colors.buttonSecondary)
                                 .clipShape(Circle())
                         }
-                        
+
                         Spacer()
-                        
+
                         Text("Your Profile")
                             .font(AppTheme.Typography.title2)
                             .foregroundColor(AppTheme.Colors.primaryText)
-                        
+
                         Spacer()
-                        
-                        // Invisible placeholder for balance
+
+                        // Invisible placeholder for alignment
                         Color.clear
                             .frame(width: 44, height: 44)
                     }
                     .padding(.horizontal, AppTheme.Spacing.small)
                     .padding(.vertical, AppTheme.Spacing.small)
-                    
+
                     ScrollView {
                         VStack(spacing: AppTheme.Spacing.medium) {
                             if authViewModel.isAuthenticated {
-                                // Account Section
+                                // MARK: Account Section
                                 VStack(alignment: .leading, spacing: AppTheme.Spacing.small) {
                                     Text("Account")
                                         .font(AppTheme.Typography.headline)
@@ -91,9 +96,41 @@ struct ProfileView: View {
                                     }
                                     .padding(AppTheme.Spacing.small)
                                     .darkCard()
+
+                                    // MARK: Delete Account Button
+                                    Button(role: .destructive) {
+                                        showingDeleteAlert = true
+                                    } label: {
+                                        HStack {
+                                            Image(systemName: "trash")
+                                            Text("Delete Account")
+                                        }
+                                        .font(AppTheme.Typography.subheadline)
+                                        .foregroundColor(AppTheme.Colors.error)
+                                        .padding(.vertical, AppTheme.Spacing.small)
+                                        .frame(maxWidth: .infinity)
+                                        .background(AppTheme.Colors.cardBackground)
+                                        .cornerRadius(AppTheme.CornerRadius.medium)
+                                        .padding(.horizontal, AppTheme.Spacing.small)
+                                    }
+                                    .alert("Confirm Account Deletion", isPresented: $showingDeleteAlert) {
+                                        Button("Delete", role: .destructive) {
+                                            performAccountDeletion()
+                                        }
+                                        Button("Cancel", role: .cancel) {}
+                                    } message: {
+                                        Text("This will permanently delete your account and all associated data. This action cannot be undone.")
+                                    }
+
+                                    if let error = deletionError {
+                                        Text(error)
+                                            .foregroundColor(AppTheme.Colors.error)
+                                            .font(AppTheme.Typography.caption)
+                                            .padding(.horizontal, AppTheme.Spacing.small)
+                                    }
                                 }
 
-                                // Outreach Section
+                                // MARK: Outreach Section
                                 VStack(alignment: .leading, spacing: AppTheme.Spacing.small) {
                                     HStack {
                                         Text("Professor Outreach")
@@ -116,7 +153,7 @@ struct ProfileView: View {
                                     if outreachViewModel.isLoading {
                                         HStack {
                                             Spacer()
-                                            ProgressView("Loading your outreach history...")
+                                            ProgressView("Loading your outreach history…")
                                                 .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.Colors.accent))
                                                 .foregroundColor(AppTheme.Colors.secondaryText)
                                                 .padding()
@@ -161,7 +198,7 @@ struct ProfileView: View {
                                     }
                                 }
                             } else {
-                                // Not logged in
+                                // MARK: Not Logged In
                                 VStack(spacing: AppTheme.Spacing.large) {
                                     Spacer().frame(height: AppTheme.Spacing.xxLarge)
                                     Image(systemName: "person.badge.shield.checkmark")
@@ -197,34 +234,49 @@ struct ProfileView: View {
                         }
                         .padding(.horizontal, AppTheme.Spacing.small)
                         .padding(.top, AppTheme.Spacing.small)
+                        .onAppear {
+                            if authViewModel.isAuthenticated {
+                                outreachViewModel.loadOutreachRecords()
+                            }
+                        }
+                        .onChange(of: authViewModel.isAuthenticated) { isAuthenticated in
+                            if isAuthenticated {
+                                outreachViewModel.loadOutreachRecords()
+                            }
+                        }
+                        .sheet(isPresented: $showingLoginSheet) {
+                            NavigationView {
+                                LoginView(showSignUp: $showSignUp)
+                                    .environmentObject(authViewModel)
+                            }
+                        }
                     }
                 }
             }
             .navigationBarHidden(true)
+            .navigationViewStyle(StackNavigationViewStyle())
             .preferredColorScheme(.dark)
-            .onAppear {
-                if authViewModel.isAuthenticated {
-                    outreachViewModel.loadOutreachRecords()
-                }
-            }
-            .onChange(of: authViewModel.isAuthenticated) { isAuthenticated in
-                if isAuthenticated {
-                    outreachViewModel.loadOutreachRecords()
-                }
-            }
-            .sheet(isPresented: $showingLoginSheet) {
-                NavigationView {
-                    LoginView(showSignUp: $showSignUp)
-                        .environmentObject(authViewModel)
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func performAccountDeletion() {
+        FirebaseService.shared.deleteAccount { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    authViewModel.signOut()
+                    presentationMode.wrappedValue.dismiss()
+                case .failure(let error):
+                    deletionError = error.localizedDescription
                 }
             }
         }
-        .navigationViewStyle(StackNavigationViewStyle())
     }
 
     private func getDisplayName(from email: String) -> String {
-        let components = email.components(separatedBy: "@")
-        return components.first ?? email
+        return email.components(separatedBy: "@").first ?? email
     }
 
     private func getFirstLetter(of email: String) -> String {
