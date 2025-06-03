@@ -1,3 +1,5 @@
+// ResFinder/AuthViewModel.swift
+
 import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
@@ -23,7 +25,6 @@ class AuthViewModel: ObservableObject {
     }
     
     private func setupAuthStateListener() {
-        // Use Firebase's built-in auth state listener
         Auth.auth().addStateDidChangeListener { [weak self] (auth, user) in
             DispatchQueue.main.async {
                 self?.user = user
@@ -70,10 +71,15 @@ class AuthViewModel: ObservableObject {
                     return
                 }
                 
+                // Clear any stored resume data from previous account
+                UserDefaults.standard.removeObject(forKey: "resumeText")
+                UserDefaults.standard.removeObject(forKey: "resumeFileName")
+                UserDefaults.standard.set(false, forKey: "hasUploadedResume")
+                
                 // Explicitly set the user and authentication state
                 self?.user = user
                 self?.isAuthenticated = true
-                print("AuthViewModel: Sign in successful - \(user.uid)")
+                print("AuthViewModel: Sign in successful - \(user.uid) (resume data cleared)")
                 
                 // Force UI refresh
                 self?.objectWillChange.send()
@@ -103,13 +109,18 @@ class AuthViewModel: ObservableObject {
                     return
                 }
                 
+                // Clear any stored resume data from previous account
+                UserDefaults.standard.removeObject(forKey: "resumeText")
+                UserDefaults.standard.removeObject(forKey: "resumeFileName")
+                UserDefaults.standard.set(false, forKey: "hasUploadedResume")
+                
                 // Create user document in Firestore
                 self?.createUserDocument(userId: user.uid, email: email)
                 
                 // Explicitly set the user and authentication state
                 self?.user = user
                 self?.isAuthenticated = true
-                print("AuthViewModel: Sign up successful - \(user.uid)")
+                print("AuthViewModel: Sign up successful - \(user.uid) (resume data cleared)")
                 
                 // Force UI refresh
                 self?.objectWillChange.send()
@@ -138,6 +149,12 @@ class AuthViewModel: ObservableObject {
             self.user = nil
             self.isAuthenticated = false
             print("AuthViewModel: Sign out successful")
+            
+            // Clear resume data when signing out as well
+            UserDefaults.standard.removeObject(forKey: "resumeText")
+            UserDefaults.standard.removeObject(forKey: "resumeFileName")
+            UserDefaults.standard.set(false, forKey: "hasUploadedResume")
+            print("AuthViewModel: Resume data cleared on sign out")
             
             // Force UI refresh
             self.objectWillChange.send()

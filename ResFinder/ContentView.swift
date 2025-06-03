@@ -30,7 +30,34 @@ struct ContentView: View {
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
-                    // Custom header (no back button)
+                    // ————————————————
+                    // 1) If no resume, show a banner prompting to upload
+                    if !hasUploadedResume {
+                        HStack {
+                            Image(systemName: "exclamationmark.circle")
+                                .foregroundColor(AppTheme.Colors.warning)
+                            Text("You haven’t uploaded a resume yet.")
+                                .font(AppTheme.Typography.subheadline)
+                                .foregroundColor(AppTheme.Colors.primaryText)
+                            Spacer()
+                            Button(action: {
+                                showResumeUpload = true
+                            }) {
+                                Text("Upload Now")
+                                    .font(AppTheme.Typography.subheadline)
+                                    .foregroundColor(AppTheme.Colors.accent)
+                                    .padding(.horizontal, AppTheme.Spacing.small)
+                                    .padding(.vertical, AppTheme.Spacing.xxxSmall)
+                                    .background(AppTheme.Colors.cardBackground)
+                                    .cornerRadius(AppTheme.CornerRadius.small)
+                            }
+                        }
+                        .padding(AppTheme.Spacing.small)
+                        .background(AppTheme.Colors.cardBackground)
+                    }
+
+                    // ————————————————
+                    // 2) Main header + “Select University”
                     HStack {
                         Color.clear
                             .frame(width: 44, height: 44)
@@ -48,7 +75,8 @@ struct ContentView: View {
                     .padding(.horizontal, AppTheme.Spacing.small)
                     .padding(.vertical, AppTheme.Spacing.small)
 
-                    // Resume info
+                    // ————————————————
+                    // 3) If resume exists, show “Resume uploaded for …” + Edit button
                     if hasUploadedResume {
                         HStack {
                             Image(systemName: "doc.fill")
@@ -76,7 +104,8 @@ struct ContentView: View {
                         .background(AppTheme.Colors.cardBackground)
                     }
 
-                    // School list
+                    // ————————————————
+                    // 4) List of schools
                     ScrollView {
                         VStack(spacing: AppTheme.Spacing.small) {
                             ForEach(schools, id: \.name) { school in

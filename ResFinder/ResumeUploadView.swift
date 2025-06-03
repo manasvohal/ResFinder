@@ -1,3 +1,8 @@
+//
+//  ResumeUploadView.swift
+//  ResFinder
+//
+
 import SwiftUI
 import UniformTypeIdentifiers
 import PDFKit
@@ -110,22 +115,12 @@ struct ResumeUploadView: View {
                                     .secondaryButton()
                                 }
 
-                                // Save button
+                                // Save or Continue Without Resume buttons
                                 VStack(spacing: AppTheme.Spacing.small) {
+                                    // Save Resume (only enabled if file is present)
                                     Button {
-                                        if resumeFileName != nil || !savedResumeFileName.isEmpty {
-                                            saveUserInfo()
-                                            if let onComplete = onComplete {
-                                                onComplete()
-                                            } else if destinationView != nil {
-                                                isNavigationActive = true
-                                            } else {
-                                                presentationMode.wrappedValue.dismiss()
-                                            }
-                                        } else {
-                                            alertMessage = "Please upload your resume."
-                                            showingAlert = true
-                                        }
+                                        saveUserInfo()
+                                        proceed()
                                     } label: {
                                         Text(isSheet ? "Save Changes" : "Save Resume")
                                             .primaryButton(
@@ -133,10 +128,18 @@ struct ResumeUploadView: View {
                                                    || !savedResumeFileName.isEmpty
                                             )
                                     }
-                                    .disabled(!(resumeFileName != nil
-                                        || !savedResumeFileName.isEmpty))
+                                    .disabled(!(resumeFileName != nil || !savedResumeFileName.isEmpty))
+
+                                    // Continue without uploading
+                                    Button {
+                                        proceed()
+                                    } label: {
+                                        Text("Continue Without Resume")
+                                            .font(AppTheme.Typography.subheadline)
+                                            .foregroundColor(AppTheme.Colors.accent)
+                                    }
+                                    .padding(.top, AppTheme.Spacing.xxSmall)
                                 }
-                                // ← “Cancel” button removed here
                             }
                             .padding(.horizontal, AppTheme.Spacing.large)
                         }
@@ -160,14 +163,6 @@ struct ResumeUploadView: View {
                     dismissButton: .default(Text("OK"))
                 )
             }
-            .onAppear {
-                if resumeFileName == nil && !savedResumeFileName.isEmpty {
-                    resumeFileName = savedResumeFileName
-                }
-                if resumeText.isEmpty && !savedResumeText.isEmpty {
-                    resumeText = savedResumeText
-                }
-            }
             .background(
                 Group {
                     if let destinationView = destinationView {
@@ -180,6 +175,15 @@ struct ResumeUploadView: View {
                     }
                 }
             )
+            .onAppear {
+                // If there’s already a saved file, reflect that
+                if resumeFileName == nil && !savedResumeFileName.isEmpty {
+                    resumeFileName = savedResumeFileName
+                }
+                if resumeText.isEmpty && !savedResumeText.isEmpty {
+                    resumeText = savedResumeText
+                }
+            }
         }
         .navigationViewStyle(StackNavigationViewStyle())
     }
@@ -191,7 +195,17 @@ struct ResumeUploadView: View {
         if !resumeText.isEmpty {
             savedResumeText = resumeText
         }
-        hasUploadedResume = true
+        hasUploadedResume = resumeFileName != nil || !savedResumeFileName.isEmpty
+    }
+
+    private func proceed() {
+        if let onComplete = onComplete {
+            onComplete()
+        } else if destinationView != nil {
+            isNavigationActive = true
+        } else {
+            presentationMode.wrappedValue.dismiss()
+        }
     }
 }
 
@@ -209,7 +223,7 @@ struct DocumentPicker: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ uiViewController: UIDocumentPickerViewController, context: Context) {}
-    
+
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
     class Coordinator: NSObject, UIDocumentPickerDelegate {

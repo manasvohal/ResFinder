@@ -69,8 +69,10 @@ struct AuthContainerView: View {
                         .navigationBarBackButtonHidden(true)
                         .environmentObject(authViewModel)
                 }
+                .navigationViewStyle(StackNavigationViewStyle())
             }
         }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
 }
 
@@ -352,4 +354,3 @@ extension View {
         }
     }
 }
-
